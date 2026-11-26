@@ -12,11 +12,13 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Base44 App" },
-      { name: "description", content: "A full-stack Base44 app built with TanStack Start." },
+      { title: "Atas Auditáveis" },
+      { name: "description", content: "Gravar, transcrever, gerar ata, revisar, aprovar e consultar reuniões com trilha de auditoria." },
     ],
     // No icon link: the platform adds the app's logo when serving.
     links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Open+Sans:wght@400;600;700&display=swap" },
       { rel: "stylesheet", href: appCss },
     ],
   }),
@@ -38,7 +40,7 @@ function RootComponent() {
 // The document. There is no index.html: the server renders <html> from here.
 function RootDocument({ children }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>

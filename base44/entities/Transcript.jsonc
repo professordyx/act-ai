@@ -1,0 +1,70 @@
+{
+  "name": "Transcript",
+  "type": "object",
+  "properties": {
+    "meetingId": {
+      "type": "string"
+    },
+    "recordingId": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "default": "pt-BR"
+    },
+    "content": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "processando",
+        "concluida",
+        "falhou"
+      ]
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "automatica",
+        "manual",
+        "mock"
+      ]
+    },
+    "confidenceScore": {
+      "type": "number"
+    },
+    "createdByUserId": {
+      "type": "string"
+    },
+    "errorMessage": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "meetingId",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

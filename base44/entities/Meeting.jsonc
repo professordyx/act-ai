@@ -1,0 +1,115 @@
+{
+  "name": "Meeting",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "scheduledAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "startedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "endedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "locationType": {
+      "type": "string",
+      "enum": [
+        "presencial",
+        "virtual",
+        "hibrida"
+      ]
+    },
+    "locationDetails": {
+      "type": "string"
+    },
+    "organizerUserId": {
+      "type": "string",
+      "description": "E-mail do organizador"
+    },
+    "reviewerUserId": {
+      "type": "string",
+      "description": "E-mail do revisor"
+    },
+    "approverUserId": {
+      "type": "string",
+      "description": "E-mail do aprovador"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "rascunho",
+        "aguardando_upload",
+        "gravacao_enviada",
+        "processando_transcricao",
+        "transcrito",
+        "minuta_gerada",
+        "em_revisao",
+        "aguardando_aprovacao",
+        "aprovada",
+        "rejeitada",
+        "arquivada"
+      ],
+      "default": "aguardando_upload"
+    },
+    "consentRequired": {
+      "type": "boolean",
+      "default": true
+    },
+    "consentCaptured": {
+      "type": "boolean",
+      "default": false
+    },
+    "latestRecordingId": {
+      "type": "string"
+    },
+    "latestTranscriptId": {
+      "type": "string"
+    },
+    "latestMinutesId": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "title",
+    "scheduledAt",
+    "organizerUserId",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

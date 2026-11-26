@@ -1,0 +1,97 @@
+{
+  "name": "Minutes",
+  "type": "object",
+  "properties": {
+    "meetingId": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "content": {
+      "type": "string"
+    },
+    "structuredData": {
+      "type": "object",
+      "properties": {
+        "summary": {
+          "type": "string"
+        },
+        "decisions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "risks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "rascunho",
+        "em_revisao",
+        "aguardando_aprovacao",
+        "aprovada",
+        "rejeitada"
+      ]
+    },
+    "generatedBy": {
+      "type": "string",
+      "enum": [
+        "ia",
+        "humano",
+        "ia_com_edicao_humana"
+      ]
+    },
+    "reviewedByUserId": {
+      "type": "string"
+    },
+    "reviewedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "approvedByUserId": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "meetingId",
+    "version",
+    "content",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

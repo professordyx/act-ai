@@ -1,0 +1,70 @@
+{
+  "name": "Recording",
+  "type": "object",
+  "properties": {
+    "meetingId": {
+      "type": "string"
+    },
+    "fileName": {
+      "type": "string"
+    },
+    "fileUrl": {
+      "type": "string",
+      "description": "file_uri privado (UploadPrivateFile)"
+    },
+    "fileSizeBytes": {
+      "type": "number"
+    },
+    "mimeType": {
+      "type": "string"
+    },
+    "durationSeconds": {
+      "type": "number"
+    },
+    "uploadedByUserId": {
+      "type": "string"
+    },
+    "uploadedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "processingStatus": {
+      "type": "string",
+      "enum": [
+        "enviado",
+        "processando",
+        "concluido",
+        "falhou"
+      ]
+    }
+  },
+  "required": [
+    "meetingId",
+    "fileName",
+    "fileUrl",
+    "uploadedByUserId",
+    "uploadedAt"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

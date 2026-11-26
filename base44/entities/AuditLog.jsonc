@@ -1,0 +1,73 @@
+{
+  "name": "AuditLog",
+  "type": "object",
+  "properties": {
+    "entityType": {
+      "type": "string",
+      "enum": [
+        "meeting",
+        "recording",
+        "transcript",
+        "minutes",
+        "approval",
+        "action_item",
+        "user"
+      ]
+    },
+    "entityId": {
+      "type": "string"
+    },
+    "meetingId": {
+      "type": "string"
+    },
+    "eventType": {
+      "type": "string"
+    },
+    "eventDescription": {
+      "type": "string"
+    },
+    "oldValueJson": {
+      "type": "string"
+    },
+    "newValueJson": {
+      "type": "string"
+    },
+    "performedByUserId": {
+      "type": "string"
+    },
+    "performedByName": {
+      "type": "string"
+    },
+    "ipAddress": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "entityType",
+    "entityId",
+    "eventType",
+    "performedByUserId"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

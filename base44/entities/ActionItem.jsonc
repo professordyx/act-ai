@@ -1,0 +1,73 @@
+{
+  "name": "ActionItem",
+  "type": "object",
+  "properties": {
+    "meetingId": {
+      "type": "string"
+    },
+    "minutesId": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "assignedToUserId": {
+      "type": "string",
+      "description": "E-mail do respons\u00e1vel"
+    },
+    "assignedToName": {
+      "type": "string"
+    },
+    "dueDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "aberta",
+        "em_andamento",
+        "concluida",
+        "cancelada"
+      ],
+      "default": "aberta"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "extraida_ia",
+        "manual"
+      ]
+    }
+  },
+  "required": [
+    "meetingId",
+    "title",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

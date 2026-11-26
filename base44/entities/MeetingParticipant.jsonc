@@ -1,0 +1,63 @@
+{
+  "name": "MeetingParticipant",
+  "type": "object",
+  "properties": {
+    "meetingId": {
+      "type": "string"
+    },
+    "userId": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "roleInMeeting": {
+      "type": "string",
+      "enum": [
+        "organizador",
+        "participante",
+        "revisor",
+        "aprovador",
+        "convidado"
+      ]
+    },
+    "attendanceStatus": {
+      "type": "string",
+      "enum": [
+        "confirmado",
+        "presente",
+        "ausente",
+        "desconhecido"
+      ]
+    }
+  },
+  "required": [
+    "meetingId",
+    "name"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "name": "MinutesVersion",
+  "type": "object",
+  "properties": {
+    "meetingId": {
+      "type": "string"
+    },
+    "minutesId": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "content": {
+      "type": "string"
+    },
+    "changeSummary": {
+      "type": "string"
+    },
+    "generatedBy": {
+      "type": "string"
+    },
+    "createdByUserId": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "meetingId",
+    "minutesId",
+    "version",
+    "content"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,61 @@
+import { Link, Outlet, useNavigate } from "@tanstack/react-router";
+import { LogOut, Menu, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useAuth } from "@/lib/AuthContext";
+
+const LOGO = "https://media.base44.com/images/public/workspaces/67dcbb69c0affc59bd5d5020/brands/402f67444_website_logo_addc7423.png";
+
+export const NAV = [
+  { to: "/", label: "Painel", exact: true },
+  { to: "/meetings", label: "Reuniões" },
+  { to: "/approvals", label: "Aprovações" },
+  { to: "/actions", label: "Ações" },
+  { to: "/repository", label: "Repositório" },
+  { to: "/admin", label: "Administração" },
+];
+
+function NavLinks({ onClick, className = "" }) {
+  return NAV.map((n) => (
+    <Link key={n.to} to={n.to} activeOptions={{ exact: !!n.exact }} onClick={onClick} className={`nav-link ${className}`}>
+      {n.label}
+    </Link>
+  ));
+}
+
+export default function AppShell() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  return (
+    <div className="flex min-h-screen flex-col bg-white">
+      <header className="sticky top-0 z-30 border-b bg-white/90 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+          <Link to="/" className="flex items-center gap-2">
+            <img src={LOGO} alt="Diocélio Goulart" className="h-8 w-auto" />
+          </Link>
+          <nav className="hidden items-center gap-6 lg:flex"><NavLinks /></nav>
+          <div className="flex items-center gap-2">
+            <Button className="hidden rounded-full font-bold sm:inline-flex" onClick={() => navigate({ to: "/meetings/new" })}>
+              <Plus className="mr-1 h-4 w-4" /> Nova reunião
+            </Button>
+            <Button variant="ghost" size="icon" title={user?.email} onClick={() => logout()}><LogOut className="h-4 w-4" /></Button>
+            <Sheet>
+              <SheetTrigger asChild><Button variant="outline" size="icon" className="lg:hidden"><Menu className="h-4 w-4" /></Button></SheetTrigger>
+              <SheetContent side="right" className="flex flex-col gap-4 pt-10">
+                <NavLinks className="text-base" />
+                <Button className="rounded-full font-bold" onClick={() => navigate({ to: "/meetings/new" })}>Nova reunião</Button>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </div>
+      </header>
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6"><Outlet /></main>
+      <footer className="bg-[#16293a] text-slate-300">
+        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-8 text-sm sm:flex-row sm:justify-between sm:px-6">
+          <span className="font-heading text-base uppercase tracking-wide text-white">Atas Auditáveis</span>
+          <span>Rastreabilidade para ISO 9001, HACCP e ISO 22000 · Diocélio Goulart</span>
+        </div>
+      </footer>
+    </div>
+  );
+}
