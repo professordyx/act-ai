@@ -65,7 +65,9 @@ export default function AppShell() {
           </div>
           <div className="flex items-center gap-3 sm:self-end">
             <span className="text-xs uppercase tracking-widest text-slate-400">Criado por</span>
-            <img src={LOGO} alt="Diocélio Goulart" className="h-7 w-auto rounded bg-white px-2 py-1" />
+            <a href="https://dioceliogoulart.com.br" target="_blank" rel="noopener noreferrer" title="dioceliogoulart.com.br">
+              <img src={LOGO} alt="Diocélio Goulart" className="h-7 w-auto rounded bg-white px-2 py-1 transition-opacity hover:opacity-80" />
+            </a>
           </div>
         </div>
       </footer>
