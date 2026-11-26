@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Sparkles } from "lucide-react";
+import { Download, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,14 +7,15 @@ import { completeReview, submitForReview, generateMinutes, saveMinutesDraft } fr
 import TemplatePicker from "@/components/meetings/TemplatePicker";
 import { useAct } from "@/hooks/use-act";
 import { useI18n } from "@/lib/i18n";
+import { downloadMinutesPdf } from "@/lib/minutes-pdf";
 
 function Highlighted({ text }) {
   return <div className="whitespace-pre-wrap text-sm leading-relaxed">{text.split(/(A VALIDAR)/g).map((p, i) => (p === "A VALIDAR" ? <mark key={i} className="rounded bg-amber-200 px-1 font-semibold text-amber-900">{p}</mark> : p))}</div>;
 }
 
 export default function MinutesCard({ data }) {
-  const { t } = useI18n();
-  const { meeting: m, minutes: mi, transcript, perms } = data;
+  const { t, locale } = useI18n();
+  const { meeting: m, minutes: mi, transcript, approvals = [], perms } = data;
   const [text, setText] = useState(mi?.content || "");
   const [summary, setSummary] = useState("");
   const [manual, setManual] = useState(false);
@@ -40,7 +41,14 @@ export default function MinutesCard({ data }) {
     <section className={`rounded-2xl border bg-white p-5 shadow-[0_4px_12px_rgba(33,58,72,.06)] ${approved ? "border-emerald-500 border-2" : ""}`}>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-heading text-lg font-semibold uppercase">3. {approved ? t("min.approved") : t("min.draft")}{mi && ` · v${mi.version}`}</h2>
-        {status && <span className="text-xs font-semibold text-muted-foreground">{t(`status.${m.status}`)} · {mi.generatedBy === "ia" ? t("min.byAi") : mi.generatedBy === "humano" ? t("min.byHuman") : t("min.byHybrid")}{mi.templateName ? ` · ${t("tpl.used")}: ${mi.templateName}` : ""}</span>}
+        <div className="flex items-center gap-3">
+          {status && <span className="text-xs font-semibold text-muted-foreground">{t(`status.${m.status}`)} · {mi.generatedBy === "ia" ? t("min.byAi") : mi.generatedBy === "humano" ? t("min.byHuman") : t("min.byHybrid")}{mi.templateName ? ` · ${t("tpl.used")}: ${mi.templateName}` : ""}</span>}
+          {mi && (
+            <Button size="sm" variant="outline" onClick={() => downloadMinutesPdf({ meeting: m, minutes: mi, approvals, t, locale })}>
+              <Download className="mr-1 h-4 w-4" />{t("min.download")}
+            </Button>
+          )}
+        </div>
       </div>
       {mi && !approved && (
         <div className="mb-3 flex gap-2 rounded-xl bg-amber-50 p-3 text-xs text-amber-900"><Sparkles className="h-4 w-4 shrink-0" />{t("min.aiWarning")}</div>
