@@ -6,6 +6,8 @@ import { useAuth } from "@/lib/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
 
+import ActAILogo from "@/components/brand/ActAILogo";
+
 const LOGO = "https://media.base44.com/images/public/workspaces/67dcbb69c0affc59bd5d5020/brands/402f67444_website_logo_addc7423.png";
 
 export const NAV = [
@@ -35,7 +37,7 @@ export default function AppShell() {
       <header className="sticky top-0 z-30 border-b bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-2">
-            <img src={LOGO} alt="Diocélio Goulart" className="h-8 w-auto" />
+            <ActAILogo markClass="h-8 w-auto" textClass="text-2xl" />
           </Link>
           <nav className="hidden items-center gap-6 lg:flex"><NavLinks /></nav>
           <div className="flex items-center gap-2">
@@ -57,8 +59,14 @@ export default function AppShell() {
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6"><Outlet /></main>
       <footer className="bg-[#16293a] text-slate-300">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-8 text-sm sm:flex-row sm:justify-between sm:px-6">
-          <span className="font-heading text-base uppercase tracking-wide text-white">Atas Auditáveis</span>
-          <span>{t("app.subtitle")}</span>
+          <div className="flex flex-col gap-3">
+            <ActAILogo tone="light" markClass="h-7 w-auto" textClass="text-xl" />
+            <span>{t("app.subtitle")}</span>
+          </div>
+          <div className="flex items-center gap-3 sm:self-end">
+            <span className="text-xs uppercase tracking-widest text-slate-400">Criado por</span>
+            <img src={LOGO} alt="Diocélio Goulart" className="h-7 w-auto rounded bg-white px-2 py-1" />
+          </div>
         </div>
       </footer>
     </div>
