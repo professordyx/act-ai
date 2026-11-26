@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { addRecording } from "@/lib/meetings-fns";
+import MeetingRecorder from "@/components/meetings/MeetingRecorder";
 import { useAct } from "@/hooks/use-act";
 import { fmt } from "@/lib/labels";
 import { useI18n } from "@/lib/i18n";
@@ -48,6 +49,13 @@ export default function RecordingCard({ data }) {
           </>
         )}
       </div>
+      {perms.canEdit && !locked && (
+        <div className="mb-4 space-y-2 rounded-xl border bg-muted/40 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("rec.recordSection")}</p>
+          <MeetingRecorder meetingId={m.id} />
+          <p className="text-xs text-muted-foreground">{t("rec.hint")}</p>
+        </div>
+      )}
       {recordings.length === 0 ? <p className="text-sm text-muted-foreground">{t("rec.empty")}</p> : (
         <ul className="divide-y">
           {recordings.map((r) => (
