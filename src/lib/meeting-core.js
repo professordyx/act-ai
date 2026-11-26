@@ -3,16 +3,13 @@
 // o acesso real passa por estas funções (service role).
 
 import { createClientFromRequest } from "@base44/sdk";
-import { createServerOnlyFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 
 export const ALL_ROLES = ["admin", "organizer", "reviewer", "approver", "participant", "auditor"];
 // Cliente de serviço: usa o contexto quando ele traz getBase44 e, se não, cria o cliente
 // a partir do próprio request (o mesmo que o middleware faria).
-const visitorClient = createServerOnlyFn((ctx) => {
-  const get = typeof ctx?.getBase44 === "function" ? ctx.getBase44 : () => createClientFromRequest(getRequest());
-  return get();
-});
+const visitorClient = (ctx) =>
+  typeof ctx?.getBase44 === "function" ? ctx.getBase44() : createClientFromRequest(getRequest());
 
 export const db = (ctx) => visitorClient(ctx).asServiceRole;
 export const fail = (message, status = 400) => {
@@ -40,9 +37,9 @@ export async function loadMe(sdb, user) {
 
 export const hasRole = (me, r) => me.isAdmin || me.roles.includes(r);
 
-const clientIp = createServerOnlyFn(() => {
+const clientIp = () => {
   try { return getRequest().headers.get("cf-connecting-ip") || ""; } catch { return ""; }
-});
+};
 
 export async function audit(sdb, me, e) {
   const ip = clientIp();

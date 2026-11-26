@@ -3,7 +3,6 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth-middleware";
 import { ACTIONS_SCHEMA, MINUTES_SCHEMA, audit, db, fail, getMeetingFor, hasRole, isoOrUndefined, loadMe, minutesPrompt, notify, sha256 } from "@/lib/meeting-core";
 
-const post = () => createServerFn({ method: "POST" }).middleware([requireUser]);
 const id = z.string().max(60);
 const LOCKED = ["em_revisao", "aguardando_aprovacao", "aprovada", "arquivada"];
 
@@ -21,7 +20,7 @@ async function createActions(sdb, m, minutesId, actions) {
   return rows.length;
 }
 
-export const generateMinutes = post()
+export const generateMinutes = createServerFn({ method: "POST" }).middleware([requireUser])
   .validator(z.object({ meetingId: id }))
   .handler(async ({ context, data }) => {
     const sdb = db(context);
@@ -56,7 +55,7 @@ export const generateMinutes = post()
     return { id: minutes.id };
   });
 
-export const saveMinutesDraft = post()
+export const saveMinutesDraft = createServerFn({ method: "POST" }).middleware([requireUser])
   .validator(z.object({ meetingId: id, minutesId: id.optional(), content: z.string().min(1).max(100000), changeSummary: z.string().max(300).optional() }))
   .handler(async ({ context, data }) => {
     const sdb = db(context);
@@ -82,7 +81,7 @@ export const saveMinutesDraft = post()
     return { id: minutes.id, version: minutes.version };
   });
 
-export const submitForReview = post()
+export const submitForReview = createServerFn({ method: "POST" }).middleware([requireUser])
   .validator(z.object({ meetingId: id, minutesId: id }))
   .handler(async ({ context, data }) => {
     const sdb = db(context);
@@ -98,7 +97,7 @@ export const submitForReview = post()
     return { ok: true };
   });
 
-export const completeReview = post()
+export const completeReview = createServerFn({ method: "POST" }).middleware([requireUser])
   .validator(z.object({ meetingId: id, minutesId: id }))
   .handler(async ({ context, data }) => {
     const sdb = db(context);
@@ -139,10 +138,10 @@ async function decide(context, data, decision) {
   return { ok: true };
 }
 const decisionInput = z.object({ meetingId: id, minutesId: id, comment: z.string().max(2000).optional() });
-export const approveMinutes = post().validator(decisionInput).handler(({ context, data }) => decide(context, data, "aprovado"));
-export const rejectMinutes = post().validator(decisionInput).handler(({ context, data }) => decide(context, data, "rejeitado"));
+export const approveMinutes = createServerFn({ method: "POST" }).middleware([requireUser]).validator(decisionInput).handler(({ context, data }) => decide(context, data, "aprovado"));
+export const rejectMinutes = createServerFn({ method: "POST" }).middleware([requireUser]).validator(decisionInput).handler(({ context, data }) => decide(context, data, "rejeitado"));
 
-export const archiveMeeting = post()
+export const archiveMeeting = createServerFn({ method: "POST" }).middleware([requireUser])
   .validator(z.object({ meetingId: id }))
   .handler(async ({ context, data }) => {
     const sdb = db(context);
@@ -155,7 +154,7 @@ export const archiveMeeting = post()
     return { ok: true };
   });
 
-export const extractActions = post()
+export const extractActions = createServerFn({ method: "POST" }).middleware([requireUser])
   .validator(z.object({ meetingId: id }))
   .handler(async ({ context, data }) => {
     const sdb = db(context);
@@ -177,7 +176,7 @@ export const extractActions = post()
     return { count: n };
   });
 
-export const createAction = post()
+export const createAction = createServerFn({ method: "POST" }).middleware([requireUser])
   .validator(z.object({ meetingId: id, title: z.string().min(2).max(300), description: z.string().max(1000).optional(), assignedToName: z.string().max(120).optional(), assignedToUserId: z.string().max(200).optional(), dueDate: z.string().max(40).optional() }))
   .handler(async ({ context, data }) => {
     const sdb = db(context);
@@ -190,7 +189,7 @@ export const createAction = post()
     return { id: a.id };
   });
 
-export const updateAction = post()
+export const updateAction = createServerFn({ method: "POST" }).middleware([requireUser])
   .validator(z.object({ id, status: z.enum(["aberta", "em_andamento", "concluida", "cancelada"]) }))
   .handler(async ({ context, data }) => {
     const sdb = db(context);
@@ -205,7 +204,7 @@ export const updateAction = post()
     return { ok: true };
   });
 
-export const listActions = post()
+export const listActions = createServerFn({ method: "POST" }).middleware([requireUser])
   .validator(z.object({ status: z.string().max(30).optional(), onlyMine: z.boolean().optional() }))
   .handler(async ({ context, data }) => {
     const sdb = db(context);

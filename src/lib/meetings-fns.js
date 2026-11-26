@@ -3,22 +3,21 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth-middleware";
 import { MOCK_TRANSCRIPT, audit, db, fail, getMeetingFor, hasRole, loadMe } from "@/lib/meeting-core";
 
-const post = () => createServerFn({ method: "POST" }).middleware([requireUser]);
 const str = (n) => z.string().max(n);
 
-export const getMe = post().handler(async ({ context }) => {
+export const getMe = createServerFn({ method: "POST" }).middleware([requireUser]).handler(async ({ context }) => {
   const me = await loadMe(db(context), context.user);
   return me;
 });
 
-export const listProfiles = post().handler(async ({ context }) => {
+export const listProfiles = createServerFn({ method: "POST" }).middleware([requireUser]).handler(async ({ context }) => {
   const sdb = db(context);
   await loadMe(sdb, context.user);
   const r = await sdb.entities.UserProfile.filter({ isActive: true }, { limit: 300 });
   return r.items.map((p) => ({ id: p.id, name: p.fullName, email: p.email, roles: p.roles }));
 });
 
-export const createMeeting = post()
+export const createMeeting = createServerFn({ method: "POST" }).middleware([requireUser])
   .validator(
     z.object({
       title: str(200).min(3),
@@ -75,7 +74,7 @@ async function visibleMeetings(sdb, me, query) {
   });
 }
 
-export const listMeetings = post()
+export const listMeetings = createServerFn({ method: "POST" }).middleware([requireUser])
   .validator(
     z.object({
       statuses: z.array(str(40)).max(12).optional(),
@@ -106,7 +105,7 @@ export const listMeetings = post()
     return items.map((m) => ({ id: m.id, title: m.title, scheduledAt: m.scheduledAt, status: m.status, organizerUserId: m.organizerUserId, reviewerUserId: m.reviewerUserId, approverUserId: m.approverUserId, locationType: m.locationType }));
   });
 
-export const getDashboard = post().handler(async ({ context }) => {
+export const getDashboard = createServerFn({ method: "POST" }).middleware([requireUser]).handler(async ({ context }) => {
   const sdb = db(context);
   const me = await loadMe(sdb, context.user);
   const meetings = await visibleMeetings(sdb, me, {});
@@ -136,7 +135,7 @@ export const getDashboard = post().handler(async ({ context }) => {
   };
 });
 
-export const getMeetingDetails = post()
+export const getMeetingDetails = createServerFn({ method: "POST" }).middleware([requireUser])
   .validator(z.object({ id: str(60) }))
   .handler(async ({ context, data }) => {
     const sdb = db(context);
@@ -160,7 +159,7 @@ export const getMeetingDetails = post()
     return { ...base, perms, recordings, transcript, versions, audit: logs };
   });
 
-export const addRecording = post()
+export const addRecording = createServerFn({ method: "POST" }).middleware([requireUser])
   .validator(z.object({ meetingId: str(60), fileName: str(255), fileUri: str(600), fileSizeBytes: z.number().optional(), mimeType: str(100).optional(), durationSeconds: z.number().optional() }))
   .handler(async ({ context, data }) => {
     const sdb = db(context);
@@ -176,7 +175,7 @@ export const addRecording = post()
 
 // Modos: "auto" (TranscribeAudio, Whisper, até 25MB), "manual" (texto colado), "mock" (demonstração).
 // LIMITAÇÃO MVP: sem diarização de falantes. EVOLUÇÃO: provedor próprio/local ("provider_future").
-export const transcribeRecording = post()
+export const transcribeRecording = createServerFn({ method: "POST" }).middleware([requireUser])
   .validator(z.object({ meetingId: str(60), recordingId: str(60).optional(), mode: z.enum(["auto", "manual", "mock"]), text: z.string().max(200000).optional() }))
   .handler(async ({ context, data }) => {
     const sdb = db(context);

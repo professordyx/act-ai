@@ -3,8 +3,6 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth-middleware";
 import { ALL_ROLES, MOCK_TRANSCRIPT, audit, db, fail, loadMe } from "@/lib/meeting-core";
 
-const post = () => createServerFn({ method: "POST" }).middleware([requireUser]);
-
 async function adminOnly(context) {
   const sdb = db(context);
   const me = await loadMe(sdb, context.user);
@@ -12,12 +10,12 @@ async function adminOnly(context) {
   return { sdb, me };
 }
 
-export const adminListProfiles = post().handler(async ({ context }) => {
+export const adminListProfiles = createServerFn({ method: "POST" }).middleware([requireUser]).handler(async ({ context }) => {
   const { sdb } = await adminOnly(context);
   return (await sdb.entities.UserProfile.filter({}, { sort: "fullName", limit: 300 })).items;
 });
 
-export const upsertProfile = post()
+export const upsertProfile = createServerFn({ method: "POST" }).middleware([requireUser])
   .validator(z.object({ email: z.string().email().max(200), fullName: z.string().max(120).optional(), roles: z.array(z.enum(ALL_ROLES)).max(6), isActive: z.boolean() }))
   .handler(async ({ context, data }) => {
     const { sdb, me } = await adminOnly(context);
@@ -30,7 +28,7 @@ export const upsertProfile = post()
   });
 
 // Dados de demonstração: reunião interna de equipe já transcrita (modo demonstração).
-export const seedDemo = post().handler(async ({ context }) => {
+export const seedDemo = createServerFn({ method: "POST" }).middleware([requireUser]).handler(async ({ context }) => {
   const { sdb, me } = await adminOnly(context);
   const names = ["Ana Souza", "Carlos Lima", "Marina Rocha"];
   const m = await sdb.entities.Meeting.create({
