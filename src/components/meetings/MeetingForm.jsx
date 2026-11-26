@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createMeeting, listProfiles } from "@/lib/meetings-fns";
+import MeetingCreated from "@/components/meetings/MeetingCreated";
 import { useAct } from "@/hooks/use-act";
 import { LOCATION_KEYS } from "@/lib/labels";
 import { useI18n } from "@/lib/i18n";
@@ -34,6 +35,7 @@ export default function MeetingForm() {
   const { data: profiles = [] } = useQuery({ queryKey: ["profiles"], queryFn: () => listProfiles() });
   const [f, setF] = useState({ title: "", description: "", scheduledAt: "", locationType: "virtual", locationDetails: "", reviewerUserId: "", approverUserId: "", consentCaptured: false });
   const [parts, setParts] = useState([{ name: "", email: "" }]);
+  const [created, setCreated] = useState(null);
   const save = useAct(createMeeting, t("toast.meetingCreated"));
   const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
   const ready = f.title.length >= 3 && f.scheduledAt && f.reviewerUserId && f.approverUserId && f.consentCaptured;
@@ -46,11 +48,14 @@ export default function MeetingForm() {
         consentRequired: true,
         participants: parts.filter((p) => p.name.trim()),
       });
-      navigate({ to: "/meetings/$id", params: { id: res.id } });
+      setCreated({ id: res.id, title: f.title });
     } catch {
       // A mensagem de erro já é exibida no aviso.
     }
   };
+  if (created) {
+    return <MeetingCreated meeting={created} onOpen={() => navigate({ to: "/meetings/$id", params: { id: created.id } })} />;
+  }
   return (
     <form onSubmit={submit} className="card-soft space-y-5 p-5 sm:p-8">
       <div className="space-y-1.5"><Label>{t("form.title")}</Label><Input value={f.title} onChange={set("title")} placeholder={t("form.titlePlaceholder")} required /></div>
