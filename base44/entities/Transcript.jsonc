@@ -31,6 +31,14 @@
         "mock"
       ]
     },
+    "provider": {
+      "type": "string",
+      "description": "Provedor usado na transcri\u00e7\u00e3o autom\u00e1tica (vazio para o motor padr\u00e3o)"
+    },
+    "model": {
+      "type": "string",
+      "description": "Modelo usado na transcri\u00e7\u00e3o autom\u00e1tica"
+    },
     "confidenceScore": {
       "type": "number"
     },

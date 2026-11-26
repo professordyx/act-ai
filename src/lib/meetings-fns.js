@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth-middleware";
 import { MOCK_TRANSCRIPT, audit, db, fail, getMeetingFor, hasRole, loadMe } from "@/lib/meeting-core";
+import { loadTranscriptionConfig, transcribeWithProvider } from "@/lib/transcription.server";
 
 const str = (n) => z.string().max(n);
 
@@ -173,8 +174,8 @@ export const addRecording = createServerFn({ method: "POST" }).middleware([requi
     return { id: r.id };
   });
 
-// Modos: "auto" (TranscribeAudio, Whisper, até 25MB), "manual" (texto colado), "mock" (demonstração).
-// LIMITAÇÃO MVP: sem diarização de falantes. EVOLUÇÃO: provedor próprio/local ("provider_future").
+// Modos: "auto" (chave própria definida em Administração; sem chave, o motor padrão da plataforma),
+// "manual" (texto colado), "mock" (demonstração). LIMITAÇÃO MVP: sem diarização de falantes.
 export const transcribeRecording = createServerFn({ method: "POST" }).middleware([requireUser])
   .validator(z.object({ meetingId: str(60), recordingId: str(60).optional(), mode: z.enum(["auto", "manual", "mock"]), text: z.string().max(200000).optional() }))
   .handler(async ({ context, data }) => {
@@ -189,6 +190,7 @@ export const transcribeRecording = createServerFn({ method: "POST" }).middleware
     const t = await sdb.entities.Transcript.create({ meetingId: m.id, recordingId: rec?.id, language: "pt-BR", content: "", status: "processando", source: data.mode === "auto" ? "automatica" : data.mode, createdByUserId: me.email });
     await sdb.entities.Meeting.update(m.id, { status: "processando_transcricao" });
     await audit(sdb, me, { entityType: "transcript", entityId: t.id, meetingId: m.id, eventType: "transcricao_iniciada", description: `Transcrição iniciada (modo ${data.mode})` });
+    let used = null;
     try {
       let content = data.text || "";
       if (data.mode === "mock") {
@@ -197,14 +199,19 @@ export const transcribeRecording = createServerFn({ method: "POST" }).middleware
       }
       if (data.mode === "auto") {
         rec && (await sdb.entities.Recording.update(rec.id, { processingStatus: "processando" }));
-        content = await sdb.integrations.Core.TranscribeAudio({ audio_url: rec.fileUrl });
-        if (typeof content !== "string") content = content?.text || JSON.stringify(content);
+        used = await loadTranscriptionConfig(sdb);
+        if (used) {
+          content = await transcribeWithProvider(used, sdb, rec.fileUrl, rec.mimeType);
+        } else {
+          content = await sdb.integrations.Core.TranscribeAudio({ audio_url: rec.fileUrl });
+          if (typeof content !== "string") content = content?.text || JSON.stringify(content);
+        }
       }
       if (!content.trim()) throw new Error("Transcrição vazia");
-      await sdb.entities.Transcript.update(t.id, { content, status: "concluida" });
+      await sdb.entities.Transcript.update(t.id, { content, status: "concluida", provider: used?.provider, model: used?.model });
       rec && (await sdb.entities.Recording.update(rec.id, { processingStatus: "concluido" }));
       await sdb.entities.Meeting.update(m.id, { status: "transcrito", latestTranscriptId: t.id });
-      await audit(sdb, me, { entityType: "transcript", entityId: t.id, meetingId: m.id, eventType: "transcricao_concluida", description: "Transcrição concluída" });
+      await audit(sdb, me, { entityType: "transcript", entityId: t.id, meetingId: m.id, eventType: "transcricao_concluida", description: used ? `Transcrição concluída (${used.provider}/${used.model})` : "Transcrição concluída" });
       return { id: t.id };
     } catch (err) {
       await sdb.entities.Transcript.update(t.id, { status: "falhou", errorMessage: String(err?.message || err).slice(0, 500) });

@@ -35,7 +35,8 @@ export default function TranscriptCard({ data }) {
       {t2?.status === "concluida" ? (
         <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-4 font-mono text-xs leading-relaxed text-slate-700">{t2.content}</pre>
       ) : <p className="text-sm text-muted-foreground">{t2?.status === "falhou" ? t("tr.failed") : t("tr.none")}</p>}
-      {t2 && <p className="mt-2 text-xs text-muted-foreground">{t("tr.source")}: {t2.source}</p>}
+      {t2?.status === "falhou" && t2.errorMessage && <p className="mt-1 break-words text-xs text-muted-foreground">{t2.errorMessage}</p>}
+      {t2 && <p className="mt-2 text-xs text-muted-foreground">{t("tr.source")}: {t2.source}{t2.provider ? ` · ${t2.provider}/${t2.model}` : ""}</p>}
     </section>
   );
 }

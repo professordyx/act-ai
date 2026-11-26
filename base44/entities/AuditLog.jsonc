@@ -11,7 +11,8 @@
         "minutes",
         "approval",
         "action_item",
-        "user"
+        "user",
+        "settings"
       ]
     },
     "entityId": {

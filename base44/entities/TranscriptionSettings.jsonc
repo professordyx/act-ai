@@ -1,0 +1,60 @@
+{
+  "name": "TranscriptionSettings",
+  "type": "object",
+  "properties": {
+    "provider": {
+      "type": "string",
+      "enum": [
+        "openai",
+        "google",
+        "assemblyai"
+      ],
+      "enumColors": [
+        "green",
+        "blue",
+        "purple"
+      ]
+    },
+    "model": {
+      "type": "string"
+    },
+    "apiKey": {
+      "type": "string",
+      "description": "Chave de API do provedor. Lida apenas no servidor; a leitura por clientes est\u00e1 bloqueada por RLS."
+    },
+    "apiKeyLast4": {
+      "type": "string",
+      "description": "Apenas os 4 \u00faltimos caracteres, para exibi\u00e7\u00e3o mascarada"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
+    "updatedByEmail": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "provider",
+    "model",
+    "apiKey"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
