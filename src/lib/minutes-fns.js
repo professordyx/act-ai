@@ -39,6 +39,7 @@ export const generateMinutes = post()
       await audit(sdb, me, { entityType: "minutes", entityId: m.latestMinutesId || m.id, meetingId: m.id, eventType: "geracao_falhou", description: String(err?.message || err).slice(0, 300) });
       fail("Falha ao gerar a minuta com IA. Tente novamente ou escreva a ata manualmente.", 502);
     }
+    if (!res || typeof res !== "object" || !res.minutesText) fail("Falha ao gerar a minuta com IA. Tente novamente ou escreva a ata manualmente.", 502);
     const { actions, ...structured } = res.structuredData || {};
     let minutes;
     const prev = m.latestMinutesId ? await sdb.entities.Minutes.get(m.latestMinutesId).catch(() => null) : null;
@@ -170,6 +171,7 @@ export const extractActions = post()
       prompt: `Extraia as ações (compromissos) do texto de uma reunião interna, em português. Não invente responsáveis nem prazos: deixe vazio quando ausentes. dueDate em AAAA-MM-DD apenas se explícito.\n\n${source.slice(0, 60000)}`,
       response_json_schema: ACTIONS_SCHEMA,
     });
+    if (!res || !Array.isArray(res.actions)) fail("Não foi possível extrair ações do texto", 502);
     const n = await createActions(sdb, m, mi?.id, res.actions);
     await audit(sdb, me, { entityType: "action_item", entityId: m.id, meetingId: m.id, eventType: "acoes_extraidas", description: `${n} ação(ões) extraída(s) por IA` });
     return { count: n };
@@ -195,8 +197,8 @@ export const updateAction = post()
     const me = await loadMe(sdb, context.user);
     const a = await sdb.entities.ActionItem.get(data.id).catch(() => null);
     if (!a) fail("Ação não encontrada", 404);
-    const m = await sdb.entities.Meeting.get(a.meetingId);
-    const allowed = me.isAdmin || a.assignedToUserId === me.email || m.organizerUserId === me.email || m.reviewerUserId === me.email;
+    const m = await sdb.entities.Meeting.get(a.meetingId).catch(() => null);
+    const allowed = me.isAdmin || a.assignedToUserId === me.email || m?.organizerUserId === me.email || m?.reviewerUserId === me.email;
     if (!allowed) fail("Sem permissão", 403);
     await sdb.entities.ActionItem.update(a.id, { status: data.status });
     await audit(sdb, me, { entityType: "action_item", entityId: a.id, meetingId: a.meetingId, eventType: "acao_atualizada", description: `Ação "${a.title}": ${a.status} → ${data.status}`, old: { status: a.status }, next: { status: data.status } });

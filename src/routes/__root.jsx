@@ -3,6 +3,7 @@ import { DefaultCatchBoundary } from "@/components/DefaultCatchBoundary";
 import { NotFound } from "@/components/NotFound";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/AuthContext";
+import { LanguageProvider } from "@/lib/i18n";
 import { Base44Scripts } from "base44:document";
 import appCss from "@/index.css?url";
 
@@ -31,8 +32,10 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <AuthProvider>
-      <Outlet />
-      <Toaster />
+      <LanguageProvider>
+        <Outlet />
+        <Toaster />
+      </LanguageProvider>
     </AuthProvider>
   );
 }

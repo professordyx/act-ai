@@ -29,9 +29,11 @@ export const base44RequestMiddleware = createMiddleware({ type: "request" }).ser
 );
 
 // Only an auth rejection means "not signed in"; outages and rate limits propagate as themselves.
+const clientFor = (context) =>
+  typeof context?.getBase44 === "function" ? context.getBase44() : createClientFromRequest(getRequest());
+
 const currentUser = (context) =>
-  context
-    .getBase44()
+  clientFor(context)
     .auth.me()
     .catch((error) => {
       if (error?.status === 401 || error?.status === 403) return null;

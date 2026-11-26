@@ -1,13 +1,16 @@
 import { Loader2 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
-export function Loading({ text = "Carregando..." }) {
-  return <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{text}</div>;
+export function Loading({ text }) {
+  const { t } = useI18n();
+  return <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{text || t("common.loading")}</div>;
 }
 export function Empty({ text }) {
   return <div className="rounded-2xl border border-dashed py-12 text-center text-sm text-muted-foreground">{text}</div>;
 }
 export function ErrorState({ error }) {
-  return <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{error?.message || "Erro ao carregar."}</div>;
+  const { t, tServer } = useI18n();
+  return <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{tServer(error?.message) || t("common.error")}</div>;
 }
 export function PageTitle({ eyebrow, title, children }) {
   return (
