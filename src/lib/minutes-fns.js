@@ -2,12 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth-middleware";
 import { ACTIONS_SCHEMA, MINUTES_SCHEMA, audit, db, fail, getMeetingFor, hasRole, isoOrUndefined, loadMe, minutesPrompt, notify, sha256 } from "@/lib/meeting-core";
+import { resolveTemplate } from "@/lib/minutes-templates";
 
 const id = z.string().max(60);
 const LOCKED = ["em_revisao", "aguardando_aprovacao", "aprovada", "arquivada"];
 
-async function addVersion(sdb, me, m, minutes, summary) {
-  await sdb.entities.MinutesVersion.create({ meetingId: m.id, minutesId: minutes.id, version: minutes.version, content: minutes.content, changeSummary: summary, generatedBy: minutes.generatedBy, createdByUserId: me.email });
+async function addVersion(sdb, me, m, minutes, summary, templateName) {
+  await sdb.entities.MinutesVersion.create({ meetingId: m.id, minutesId: minutes.id, version: minutes.version, content: minutes.content, changeSummary: summary, generatedBy: minutes.generatedBy, templateName, createdByUserId: me.email });
 }
 
 async function createActions(sdb, m, minutesId, actions) {
@@ -21,19 +22,20 @@ async function createActions(sdb, m, minutesId, actions) {
 }
 
 export const generateMinutes = createServerFn({ method: "POST" }).middleware([requireUser])
-  .validator(z.object({ meetingId: id }))
+  .validator(z.object({ meetingId: id, templateId: id.optional(), templateKey: z.string().max(60).optional() }))
   .handler(async ({ context, data }) => {
     const sdb = db(context);
     const me = await loadMe(sdb, context.user);
     const { m, rel } = await getMeetingFor(sdb, me, data.meetingId);
     if (!rel.canEdit) fail("Sem permissão", 403);
     if (LOCKED.includes(m.status)) fail("A ata não pode ser regenerada neste status");
+    const tpl = await resolveTemplate(sdb, { id: data.templateId, key: data.templateKey });
     const t = m.latestTranscriptId ? await sdb.entities.Transcript.get(m.latestTranscriptId).catch(() => null) : null;
     if (!t || t.status !== "concluida") fail("A transcrição precisa estar concluída");
     const parts = await sdb.entities.MeetingParticipant.filter({ meetingId: m.id });
     let res;
     try {
-      res = await sdb.integrations.Core.InvokeLLM({ prompt: minutesPrompt(m, parts, t.content), response_json_schema: MINUTES_SCHEMA });
+      res = await sdb.integrations.Core.InvokeLLM({ prompt: minutesPrompt(m, parts, t.content, tpl), response_json_schema: MINUTES_SCHEMA });
     } catch (err) {
       await audit(sdb, me, { entityType: "minutes", entityId: m.latestMinutesId || m.id, meetingId: m.id, eventType: "geracao_falhou", description: String(err?.message || err).slice(0, 300) });
       fail("Falha ao gerar a minuta com IA. Tente novamente ou escreva a ata manualmente.", 502);
@@ -42,16 +44,17 @@ export const generateMinutes = createServerFn({ method: "POST" }).middleware([re
     const { actions, ...structured } = res.structuredData || {};
     let minutes;
     const prev = m.latestMinutesId ? await sdb.entities.Minutes.get(m.latestMinutesId).catch(() => null) : null;
+    const tplFields = { templateId: tpl?.id || "", templateName: tpl?.name || "" };
     if (prev) {
-      minutes = await sdb.entities.Minutes.update(prev.id, { version: prev.version + 1, content: res.minutesText, structuredData: structured, status: "rascunho", generatedBy: "ia", reviewedByUserId: "", approvedByUserId: "" });
-      minutes = { ...prev, ...minutes, id: prev.id, version: prev.version + 1, content: res.minutesText, generatedBy: "ia" };
+      minutes = await sdb.entities.Minutes.update(prev.id, { version: prev.version + 1, content: res.minutesText, structuredData: structured, status: "rascunho", generatedBy: "ia", reviewedByUserId: "", approvedByUserId: "", ...tplFields });
+      minutes = { ...prev, ...minutes, id: prev.id, version: prev.version + 1, content: res.minutesText, generatedBy: "ia", ...tplFields };
     } else {
-      minutes = await sdb.entities.Minutes.create({ meetingId: m.id, version: 1, content: res.minutesText, structuredData: structured, status: "rascunho", generatedBy: "ia" });
+      minutes = await sdb.entities.Minutes.create({ meetingId: m.id, version: 1, content: res.minutesText, structuredData: structured, status: "rascunho", generatedBy: "ia", ...tplFields });
     }
-    await addVersion(sdb, me, m, minutes, "Minuta gerada por IA a partir da transcrição");
+    await addVersion(sdb, me, m, minutes, `Minuta gerada por IA a partir da transcrição${tpl ? ` (template: ${tpl.name})` : ""}`, tpl?.name);
     const n = await createActions(sdb, m, minutes.id, actions);
     await sdb.entities.Meeting.update(m.id, { status: "minuta_gerada", latestMinutesId: minutes.id });
-    await audit(sdb, me, { entityType: "minutes", entityId: minutes.id, meetingId: m.id, eventType: "minuta_gerada", description: `Minuta v${minutes.version} gerada por IA; ${n} ação(ões) extraída(s)` });
+    await audit(sdb, me, { entityType: "minutes", entityId: minutes.id, meetingId: m.id, eventType: "minuta_gerada", description: `Minuta v${minutes.version} gerada por IA${tpl ? ` com o template "${tpl.name}"` : ""}; ${n} ação(ões) extraída(s)` });
     return { id: minutes.id };
   });
 
@@ -76,7 +79,7 @@ export const saveMinutesDraft = createServerFn({ method: "POST" }).middleware([r
       await sdb.entities.Minutes.update(prev.id, { version: minutes.version, content: data.content, generatedBy: minutes.generatedBy, status: wasRejected ? "rascunho" : prev.status });
       if (wasRejected) await sdb.entities.Meeting.update(m.id, { status: "minuta_gerada" });
     }
-    await addVersion(sdb, me, m, minutes, data.changeSummary || "Edição manual");
+    await addVersion(sdb, me, m, minutes, data.changeSummary || "Edição manual", minutes.templateName);
     await audit(sdb, me, { entityType: "minutes", entityId: minutes.id, meetingId: m.id, eventType: "ata_editada", description: `Ata salva como versão ${minutes.version}${data.changeSummary ? `: ${data.changeSummary}` : ""}` });
     return { id: minutes.id, version: minutes.version };
   });

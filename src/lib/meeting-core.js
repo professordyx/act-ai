@@ -131,7 +131,10 @@ export const MINUTES_SCHEMA = {
 
 export const ACTIONS_SCHEMA = { type: "object", properties: { actions: ACTION_ITEMS }, required: ["actions"] };
 
-export function minutesPrompt(meeting, participants, transcript) {
+export function minutesPrompt(meeting, participants, transcript, template) {
+  const format = template?.prompt?.trim()
+    ? `\n\nFORMATO OBRIGATÓRIO DA ATA (template "${template.name}"):\nSubstitua a estrutura sugerida na regra 3 pela estrutura, seções e tom descritos abaixo. Mantenha as demais regras (não inventar fatos, marcar "A VALIDAR", prazos e formato de retorno).\n---\n${template.prompt.trim().slice(0, 6000)}\n---`
+    : "";
   return `Você é um assistente especializado em redação de atas corporativas auditáveis.
 Gere uma minuta de ata de reunião interna, em português do Brasil, com base EXCLUSIVAMENTE na transcrição fornecida.
 
@@ -142,6 +145,8 @@ Regras:
 4. Se não houver informação suficiente para um campo, use "A VALIDAR" ou deixe vazio.
 5. Prazos em actions.dueDate no formato AAAA-MM-DD somente se explícitos; senão deixe vazio.
 6. Retorne minutesText (texto completo da ata) e structuredData (summary, topics, decisions, risks, actions com confidence alta|media|baixa).
+
+${format}
 
 Reunião: ${meeting.title}
 Data: ${meeting.scheduledAt}

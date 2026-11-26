@@ -55,6 +55,14 @@
         "ia_com_edicao_humana"
       ]
     },
+    "templateId": {
+      "type": "string",
+      "description": "Template pr\u00f3prio usado na gera\u00e7\u00e3o (vazio para modelos padr\u00e3o)"
+    },
+    "templateName": {
+      "type": "string",
+      "description": "Nome do template usado na gera\u00e7\u00e3o, para rastreabilidade"
+    },
     "reviewedByUserId": {
       "type": "string"
     },

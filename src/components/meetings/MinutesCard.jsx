@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { completeReview, submitForReview, generateMinutes, saveMinutesDraft } from "@/lib/minutes-fns";
+import TemplatePicker from "@/components/meetings/TemplatePicker";
 import { useAct } from "@/hooks/use-act";
 import { useI18n } from "@/lib/i18n";
 
@@ -17,6 +18,7 @@ export default function MinutesCard({ data }) {
   const [text, setText] = useState(mi?.content || "");
   const [summary, setSummary] = useState("");
   const [manual, setManual] = useState(false);
+  const [template, setTemplate] = useState("system");
   useEffect(() => setText(mi?.content || ""), [mi?.content, mi?.version]);
   const gen = useAct(generateMinutes, t("toast.minutesGenerated"));
   const save = useAct(saveMinutesDraft, t("toast.draftSaved"));
@@ -27,22 +29,31 @@ export default function MinutesCard({ data }) {
   const editable = perms.canEdit && !locked && (mi || manual);
   const approved = status === "aprovada";
   const dirty = mi && text !== mi.content;
+  const genData = () =>
+    template === "system"
+      ? { meetingId: m.id }
+      : template.startsWith("ex:")
+        ? { meetingId: m.id, templateKey: template.slice(3) }
+        : { meetingId: m.id, templateId: template };
 
   return (
     <section className={`rounded-2xl border bg-white p-5 shadow-[0_4px_12px_rgba(33,58,72,.06)] ${approved ? "border-emerald-500 border-2" : ""}`}>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-heading text-lg font-semibold uppercase">3. {approved ? t("min.approved") : t("min.draft")}{mi && ` · v${mi.version}`}</h2>
-        {status && <span className="text-xs font-semibold text-muted-foreground">{t(`status.${m.status}`)} · {mi.generatedBy === "ia" ? t("min.byAi") : mi.generatedBy === "humano" ? t("min.byHuman") : t("min.byHybrid")}</span>}
+        {status && <span className="text-xs font-semibold text-muted-foreground">{t(`status.${m.status}`)} · {mi.generatedBy === "ia" ? t("min.byAi") : mi.generatedBy === "humano" ? t("min.byHuman") : t("min.byHybrid")}{mi.templateName ? ` · ${t("tpl.used")}: ${mi.templateName}` : ""}</span>}
       </div>
       {mi && !approved && (
         <div className="mb-3 flex gap-2 rounded-xl bg-amber-50 p-3 text-xs text-amber-900"><Sparkles className="h-4 w-4 shrink-0" />{t("min.aiWarning")}</div>
       )}
       {perms.canEdit && !locked && (
-        <div className="mb-3 flex flex-wrap gap-2">
-          <Button size="sm" disabled={transcript?.status !== "concluida" || gen.isPending} onClick={() => gen.mutate({ meetingId: m.id })}>
-            {gen.isPending && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}{mi ? t("min.regenerate") : t("min.generate")}
-          </Button>
-          {!mi && <Button size="sm" variant="outline" onClick={() => setManual(true)}>{t("min.manual")}</Button>}
+        <div className="mb-3 space-y-2">
+          <TemplatePicker value={template} onChange={setTemplate} />
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" disabled={transcript?.status !== "concluida" || gen.isPending} onClick={() => gen.mutate(genData())}>
+              {gen.isPending && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}{mi ? t("min.regenerate") : t("min.generate")}
+            </Button>
+            {!mi && <Button size="sm" variant="outline" onClick={() => setManual(true)}>{t("min.manual")}</Button>}
+          </div>
         </div>
       )}
       {!mi && !manual && <p className="text-sm text-muted-foreground">{t("min.empty")}</p>}

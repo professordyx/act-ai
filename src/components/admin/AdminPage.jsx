@@ -10,6 +10,7 @@ import { getMe } from "@/lib/meetings-fns";
 import { useAct } from "@/hooks/use-act";
 import { ROLE_KEYS } from "@/lib/labels";
 import { ErrorState, Loading, PageTitle } from "@/components/shared/States";
+import TemplatesPanel from "@/components/admin/TemplatesPanel";
 import { useI18n } from "@/lib/i18n";
 
 const ROLES = ROLE_KEYS.filter((r) => r !== "admin");
@@ -50,6 +51,7 @@ export default function AdminPage() {
         <Button type="submit" disabled={!email}>{t("common.add")}</Button>
       </form>
       {list.isLoading ? <Loading /> : list.error ? <ErrorState error={list.error} /> : <div className="grid gap-3 lg:grid-cols-2">{list.data.map((p) => <ProfileRow key={p.id} p={p} save={save} />)}</div>}
+      <TemplatesPanel />
       <div className="card-featured flex flex-wrap items-center justify-between gap-3 p-5">
         <div><div className="font-heading text-lg font-semibold uppercase">{t("adm.demoTitle")}</div><p className="text-sm text-slate-300">{t("adm.demoText")}</p></div>
         <Button variant="secondary" disabled={seed.isPending} onClick={() => seed.mutate(undefined, { onSuccess: (r) => navigate({ to: "/meetings/$id", params: { id: r.id } }) })}>{t("adm.demoButton")}</Button>
