@@ -1,3 +1,4 @@
+import { Lock, ShieldCheck } from "lucide-react";
 import { LANGS, useI18n } from "@/lib/i18n";
 import { LANDING_IMAGES } from "@/lib/landing-copy";
 import { Image } from "@/components/ui/image";
@@ -47,7 +48,17 @@ export default function Hero({ copy, brand }) {
         <h1 className="font-heading text-[40px] font-bold uppercase leading-[1.05] text-white sm:text-[56px] lg:text-[76px]">{copy.title}</h1>
         <p className="max-w-[600px] text-[17px] leading-[1.6] text-[#e6eee9] md:text-[19px]">{copy.lead}</p>
         <CtaPair copy={heroCopy} to={to} search={search} />
-        <p className="max-w-[520px] text-[14px] leading-[1.6] text-[#c9d6d2]">{copy.nextStep}</p>
+        <div className="flex max-w-[560px] flex-col gap-2">
+          <p className="text-[14px] leading-[1.6] text-[#c9d6d2]">{copy.nextStep}</p>
+          <p className="flex items-center gap-2 text-[13px] font-semibold text-[#e9d8b4]">
+            <ShieldCheck className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />
+            {copy.riskNote}
+          </p>
+          <p className="flex items-start gap-2 text-[13px] leading-[1.6] text-[#a9c0b6]">
+            <Lock className="mt-[3px] h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />
+            {copy.privacyNote}
+          </p>
+        </div>
       </div>
     </header>
   );
