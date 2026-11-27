@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/AuthContext";
 import { LanguageProvider } from "@/lib/i18n";
 import { Base44Scripts } from "base44:document";
+import { APP_ICON_URL } from "@/components/brand/ActAIMark";
 import appCss from "@/index.css?url";
 
 export const Route = createRootRoute({
@@ -16,8 +17,8 @@ export const Route = createRootRoute({
       { title: "Atas Auditáveis" },
       { name: "description", content: "Gravar, transcrever, gerar ata, revisar, aprovar e consultar reuniões com trilha de auditoria." },
     ],
-    // No icon link: the platform adds the app's logo when serving.
     links: [
+      { rel: "icon", type: "image/png", href: APP_ICON_URL },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Open+Sans:wght@400;600;700&display=swap" },
       { rel: "stylesheet", href: appCss },
