@@ -27,6 +27,40 @@ export const upsertProfile = createServerFn({ method: "POST" }).middleware([requ
     return { ok: true };
   });
 
+// Consumo estimado de IA: chamadas, tokens e custo (US$) registrados em AiUsage.
+export const getAiUsage = createServerFn({ method: "POST" }).middleware([requireUser]).handler(async ({ context }) => {
+  const { sdb } = await adminOnly(context);
+  const rows = (await sdb.entities.AiUsage.list({ sort: "-created_date", limit: 500 })).items;
+  const sum = (k) => rows.reduce((a, r) => a + (r[k] || 0), 0);
+  const byKindMap = {};
+  rows.forEach((r) => {
+    const k = r.kind || "outro";
+    byKindMap[k] = byKindMap[k] || { kind: k, calls: 0, tokens: 0, costUsd: 0 };
+    byKindMap[k].calls += 1;
+    byKindMap[k].tokens += (r.inputTokens || 0) + (r.outputTokens || 0);
+    byKindMap[k].costUsd += r.costUsd || 0;
+  });
+  const recent = rows.slice(0, 20);
+  const ids = [...new Set(recent.map((r) => r.meetingId).filter(Boolean))];
+  const titles = ids.length
+    ? Object.fromEntries((await sdb.entities.Meeting.filter({ id: { $in: ids } }, { limit: 100 })).items.map((m) => [m.id, m.title]))
+    : {};
+  return {
+    calls: rows.length,
+    tokens: sum("inputTokens") + sum("outputTokens"),
+    costUsd: sum("costUsd"),
+    byKind: Object.values(byKindMap).sort((a, b) => b.costUsd - a.costUsd),
+    recent: recent.map((r) => ({
+      id: r.id,
+      kind: r.kind,
+      created_date: r.created_date,
+      tokens: (r.inputTokens || 0) + (r.outputTokens || 0),
+      costUsd: r.costUsd || 0,
+      meetingTitle: titles[r.meetingId],
+    })),
+  };
+});
+
 // Dados de demonstração: reunião interna de equipe já transcrita (modo demonstração).
 export const seedDemo = createServerFn({ method: "POST" }).middleware([requireUser]).handler(async ({ context }) => {
   const { sdb, me } = await adminOnly(context);

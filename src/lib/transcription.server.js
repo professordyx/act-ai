@@ -1,6 +1,6 @@
 // Transcrição com chave própria do administrador (OpenAI, Google, AssemblyAI).
 // Roda apenas no servidor: a chave nunca sai daqui.
-import { fail } from "@/lib/meeting-core";
+import { fail, logAiUsage } from "@/lib/meeting-core";
 import { providerById } from "@/lib/transcription-providers";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -131,11 +131,13 @@ async function assemblyai(cfg, url, language) {
 // transcrevem no idioma falado no áudio, não no idioma pedido.
 const LANG_LABELS = { pt: "português do Brasil", en: "inglês", es: "espanhol" };
 
-export async function detectTextLanguage(sdb, text) {
+export async function detectTextLanguage(sdb, text, meta = {}) {
+  const prompt = `Identifique o idioma predominante do texto abaixo. Responda apenas com o código: pt (português), en (inglês) ou es (espanhol).\n\n"""${text.slice(0, 2000)}"""`;
   const res = await sdb.integrations.Core.InvokeLLM({
-    prompt: `Identifique o idioma predominante do texto abaixo. Responda apenas com o código: pt (português), en (inglês) ou es (espanhol).\n\n"""${text.slice(0, 2000)}"""`,
+    prompt,
     response_json_schema: { type: "object", properties: { language: { type: "string" } }, required: ["language"] },
   });
+  await logAiUsage(sdb, { ...meta, kind: "idioma", inputChars: prompt.length, outputChars: JSON.stringify(res || "").length });
   const code = String(res?.language || "").slice(0, 2).toLowerCase();
   return ["pt", "en", "es"].includes(code) ? code : null;
 }
@@ -153,16 +155,23 @@ const chunkText = (text, size = 7000) => {
   return chunks;
 };
 
-export async function translateTranscript(sdb, text, target) {
+export async function translateTranscript(sdb, text, target, meta = {}) {
   const label = LANG_LABELS[target] || LANG_LABELS.pt;
   const out = [];
+  let inputChars = 0;
+  let outputChars = 0;
   for (const chunk of chunkText(text)) {
+    const prompt = `Traduza para ${label} o trecho de transcrição de reunião abaixo. Preserve nomes próprios, números, datas, siglas e a ordem das falas. Não resuma, não acrescente informação e não comente: devolva somente a tradução.\n\n"""${chunk}"""`;
     const res = await sdb.integrations.Core.InvokeLLM({
-      prompt: `Traduza para ${label} o trecho de transcrição de reunião abaixo. Preserve nomes próprios, números, datas, siglas e a ordem das falas. Não resuma, não acrescente informação e não comente: devolva somente a tradução.\n\n"""${chunk}"""`,
+      prompt,
       response_json_schema: { type: "object", properties: { text: { type: "string" } }, required: ["text"] },
     });
-    out.push(String(res?.text || "").trim() || chunk);
+    const translated = String(res?.text || "").trim() || chunk;
+    inputChars += prompt.length;
+    outputChars += JSON.stringify(res || "").length;
+    out.push(translated);
   }
+  await logAiUsage(sdb, { ...meta, kind: "traducao", inputChars, outputChars });
   return out.join("\n");
 }
 

@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth-middleware";
-import { ACTIONS_SCHEMA, MINUTES_SCHEMA, audit, db, fail, getMeetingFor, hasRole, isoOrUndefined, langName, loadMe, meetingLanguage, minutesPrompt, notify, sha256 } from "@/lib/meeting-core";
+import { ACTIONS_SCHEMA, MINUTES_SCHEMA, audit, db, fail, getMeetingFor, hasRole, isoOrUndefined, langName, loadMe, logAiUsage, meetingLanguage, minutesPrompt, notify, sha256 } from "@/lib/meeting-core";
 import { resolveTemplate } from "@/lib/minutes-templates";
 
 const id = z.string().max(60);
@@ -34,13 +34,15 @@ export const generateMinutes = createServerFn({ method: "POST" }).middleware([re
     if (!t || t.status !== "concluida") fail("A transcrição precisa estar concluída");
     const parts = await sdb.entities.MeetingParticipant.filter({ meetingId: m.id });
     let res;
+    const prompt = minutesPrompt(m, parts, t.content, tpl);
     try {
-      res = await sdb.integrations.Core.InvokeLLM({ prompt: minutesPrompt(m, parts, t.content, tpl), response_json_schema: MINUTES_SCHEMA });
+      res = await sdb.integrations.Core.InvokeLLM({ prompt, response_json_schema: MINUTES_SCHEMA });
     } catch (err) {
       await audit(sdb, me, { entityType: "minutes", entityId: m.latestMinutesId || m.id, meetingId: m.id, eventType: "geracao_falhou", description: String(err?.message || err).slice(0, 300) });
       fail("Falha ao gerar a minuta com IA. Tente novamente ou escreva a ata manualmente.", 502);
     }
     if (!res || typeof res !== "object" || !res.minutesText) fail("Falha ao gerar a minuta com IA. Tente novamente ou escreva a ata manualmente.", 502);
+    await logAiUsage(sdb, { kind: "ata", meetingId: m.id, userEmail: me.email, inputChars: prompt.length, outputChars: JSON.stringify(res).length });
     const { actions, ...structured } = res.structuredData || {};
     let minutes;
     const prev = m.latestMinutesId ? await sdb.entities.Minutes.get(m.latestMinutesId).catch(() => null) : null;
@@ -169,11 +171,10 @@ export const extractActions = createServerFn({ method: "POST" }).middleware([req
     const t = m.latestTranscriptId ? await sdb.entities.Transcript.get(m.latestTranscriptId).catch(() => null) : null;
     const source = mi?.content || t?.content;
     if (!source) fail("Não há ata ou transcrição para analisar");
-    const res = await sdb.integrations.Core.InvokeLLM({
-      prompt: `Extraia as ações (compromissos) do texto de uma reunião interna, em ${langName(meetingLanguage(m))}. Escreva os títulos e descrições nesse idioma e não invente responsáveis nem prazos: deixe vazio quando ausentes. dueDate em AAAA-MM-DD apenas se explícito.\n\n${source.slice(0, 60000)}`,
-      response_json_schema: ACTIONS_SCHEMA,
-    });
+    const prompt = `Extraia as ações (compromissos) do texto de uma reunião interna, em ${langName(meetingLanguage(m))}. Escreva os títulos e descrições nesse idioma e não invente responsáveis nem prazos: deixe vazio quando ausentes. dueDate em AAAA-MM-DD apenas se explícito.\n\n${source.slice(0, 60000)}`;
+    const res = await sdb.integrations.Core.InvokeLLM({ prompt, response_json_schema: ACTIONS_SCHEMA });
     if (!res || !Array.isArray(res.actions)) fail("Não foi possível extrair ações do texto", 502);
+    await logAiUsage(sdb, { kind: "acoes", meetingId: m.id, userEmail: me.email, inputChars: prompt.length, outputChars: JSON.stringify(res).length });
     const n = await createActions(sdb, m, mi?.id, res.actions);
     await audit(sdb, me, { entityType: "action_item", entityId: m.id, meetingId: m.id, eventType: "acoes_extraidas", description: `${n} ação(ões) extraída(s) por IA` });
     return { count: n };

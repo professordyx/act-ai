@@ -76,6 +76,28 @@ export async function notify(sdb, to, subject, body) {
   );
 }
 
+// Estimativa de consumo de IA: ~4 caracteres por token e preço de referência por 1M de tokens.
+export const AI_PRICE = { input: 0.15, output: 0.6 };
+export const estimateTokens = (chars) => Math.ceil((Number(chars) || 0) / 4);
+
+// Registro best-effort: nunca interrompe o fluxo principal.
+export async function logAiUsage(sdb, { kind, model, inputChars, outputChars, meetingId, userEmail }) {
+  const inputTokens = estimateTokens(inputChars);
+  const outputTokens = estimateTokens(outputChars);
+  const costUsd = (inputTokens * AI_PRICE.input + outputTokens * AI_PRICE.output) / 1e6;
+  await sdb.entities.AiUsage.create({
+    kind,
+    model: model || "automatic",
+    meetingId,
+    userEmail,
+    inputChars: Number(inputChars) || 0,
+    outputChars: Number(outputChars) || 0,
+    inputTokens,
+    outputTokens,
+    costUsd,
+  }).catch(() => null);
+}
+
 export async function getMeetingFor(sdb, me, id) {
   const m = await sdb.entities.Meeting.get(id).catch(() => null);
   if (!m) fail("Reunião não encontrada", 404);

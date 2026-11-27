@@ -83,6 +83,7 @@ export const listMeetings = createServerFn({ method: "POST" }).middleware([requi
       statuses: z.array(str(40)).max(12).optional(),
       organizer: str(200).optional(),
       participant: str(200).optional(),
+      locationType: z.enum(["presencial", "virtual", "hibrida"]).optional(),
       from: str(40).optional(),
       to: str(40).optional(),
       text: str(100).optional(),
@@ -94,6 +95,7 @@ export const listMeetings = createServerFn({ method: "POST" }).middleware([requi
     const q = {};
     if (data.statuses?.length) q.status = { $in: data.statuses };
     if (data.organizer) q.organizerUserId = data.organizer.toLowerCase();
+    if (data.locationType) q.locationType = data.locationType;
     if (data.from || data.to) {
       q.scheduledAt = {};
       if (data.from) q.scheduledAt.$gte = new Date(data.from).toISOString();
@@ -104,7 +106,16 @@ export const listMeetings = createServerFn({ method: "POST" }).middleware([requi
       const ids = (await sdb.entities.MeetingParticipant.filter({ email: data.participant.toLowerCase() }, { limit: 500 })).items.map((p) => p.meetingId);
       items = items.filter((m) => ids.includes(m.id));
     }
-    if (data.text) items = items.filter((m) => m.title.toLowerCase().includes(data.text.toLowerCase()));
+    if (data.text) {
+      // Busca por título ou por participante (nome ou e-mail).
+      const term = data.text.toLowerCase();
+      const ids = items.map((m) => m.id);
+      const parts = ids.length ? (await sdb.entities.MeetingParticipant.filter({ meetingId: { $in: ids } }, { limit: 1000 })).items : [];
+      const byParticipant = new Set(
+        parts.filter((p) => (p.name || "").toLowerCase().includes(term) || (p.email || "").toLowerCase().includes(term)).map((p) => p.meetingId),
+      );
+      items = items.filter((m) => m.title.toLowerCase().includes(term) || byParticipant.has(m.id));
+    }
     return items.map((m) => ({ id: m.id, title: m.title, scheduledAt: m.scheduledAt, status: m.status, organizerUserId: m.organizerUserId, reviewerUserId: m.reviewerUserId, approverUserId: m.approverUserId, locationType: m.locationType }));
   });
 
@@ -229,9 +240,10 @@ export const transcribeRecording = createServerFn({ method: "POST" }).middleware
       // o texto é convertido para o idioma configurado.
       let translatedFrom;
       try {
-        const detected = await detectTextLanguage(sdb, content);
+        const meta = { meetingId: m.id, userEmail: me.email };
+        const detected = await detectTextLanguage(sdb, content, meta);
         if (detected && detected !== lang) {
-          content = await translateTranscript(sdb, content, lang);
+          content = await translateTranscript(sdb, content, lang, meta);
           translatedFrom = detected;
         }
       } catch (e) {

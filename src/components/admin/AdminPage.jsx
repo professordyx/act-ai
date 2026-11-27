@@ -12,6 +12,7 @@ import { ROLE_KEYS } from "@/lib/labels";
 import { ErrorState, Loading, PageTitle } from "@/components/shared/States";
 import TemplatesPanel from "@/components/admin/TemplatesPanel";
 import TranscriptionPanel from "@/components/admin/TranscriptionPanel";
+import AiUsagePanel from "@/components/admin/AiUsagePanel";
 import { useI18n } from "@/lib/i18n";
 
 const ROLES = ROLE_KEYS.filter((r) => r !== "admin");
@@ -53,6 +54,7 @@ export default function AdminPage() {
       </form>
       {list.isLoading ? <Loading /> : list.error ? <ErrorState error={list.error} /> : <div className="grid gap-3 lg:grid-cols-2">{list.data.map((p) => <ProfileRow key={p.id} p={p} save={save} />)}</div>}
       <TranscriptionPanel />
+      <AiUsagePanel />
       <TemplatesPanel />
       <div className="card-featured flex flex-wrap items-center justify-between gap-3 p-5">
         <div><div className="font-heading text-lg font-semibold uppercase">{t("adm.demoTitle")}</div><p className="text-sm text-slate-300">{t("adm.demoText")}</p></div>

@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/lib/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
+import GlobalSearch from "@/components/layout/GlobalSearch";
 
 import ActAILogo from "@/components/brand/ActAILogo";
 
@@ -40,6 +41,7 @@ export default function AppShell() {
             <ActAILogo markClass="h-8 w-auto" textClass="text-2xl" />
           </Link>
           <nav className="hidden items-center gap-6 lg:flex"><NavLinks /></nav>
+          <GlobalSearch />
           <div className="flex items-center gap-2">
             <Button className="hidden rounded-full font-bold sm:inline-flex" onClick={() => navigate({ to: "/meetings/new" })}>
               <Plus className="mr-1 h-4 w-4" /> {t("common.newMeeting")}
