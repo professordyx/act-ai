@@ -9,6 +9,7 @@ import SubscriptionCard from "@/components/billing/SubscriptionCard";
 import SeatPanel from "@/components/billing/SeatPanel";
 import BillingHistory from "@/components/billing/BillingHistory";
 import { useBillingCopy } from "@/lib/billing-i18n";
+import { base44 } from "@/api/base44Client";
 import { useI18n } from "@/lib/i18n";
 
 export default function BillingPage({ checkout }) {
@@ -28,6 +29,7 @@ export default function BillingPage({ checkout }) {
     confirmCheckout()
       .then((res) => {
         if (!res?.ok) return;
+        base44.analytics.track({ eventName: "subscription_activated", properties: { seats: res.seats ?? null } });
         toast.success(c.checkoutSuccess);
         qc.invalidateQueries({ queryKey: ["billing"] });
       })

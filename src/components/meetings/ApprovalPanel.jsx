@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { approveMinutes, archiveMeeting, rejectMinutes } from "@/lib/minutes-fns";
 import { useAct } from "@/hooks/use-act";
+import { base44 } from "@/api/base44Client";
 import { fmt } from "@/lib/labels";
 import { useI18n } from "@/lib/i18n";
 import FieldHelp from "@/components/help/FieldHelp";
@@ -11,7 +12,7 @@ export default function ApprovalPanel({ data }) {
   const { t, locale } = useI18n();
   const { meeting: m, minutes: mi, approvals, perms } = data;
   const [comment, setComment] = useState("");
-  const approve = useAct(approveMinutes, t("toast.approved"));
+  const approve = useAct(approveMinutes, t("toast.approved"), () => base44.analytics.track({ eventName: "minutes_approved", properties: { meeting_id: m.id, minutes_id: mi?.id ?? null } }));
   const reject = useAct(rejectMinutes, t("toast.rejected"));
   const archive = useAct(archiveMeeting, t("toast.archived"));
   const waiting = mi?.status === "aguardando_aprovacao";

@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { completeReview, submitForReview, generateMinutes, saveMinutesDraft } from "@/lib/minutes-fns";
 import TemplatePicker from "@/components/meetings/TemplatePicker";
 import { useAct } from "@/hooks/use-act";
+import { base44 } from "@/api/base44Client";
 import { useI18n } from "@/lib/i18n";
 import { downloadMinutesPdf } from "@/lib/minutes-pdf";
 import FieldHelp from "@/components/help/FieldHelp";
@@ -22,7 +23,7 @@ export default function MinutesCard({ data }) {
   const [manual, setManual] = useState(false);
   const [template, setTemplate] = useState("system");
   useEffect(() => setText(mi?.content || ""), [mi?.content, mi?.version]);
-  const gen = useAct(generateMinutes, t("toast.minutesGenerated"));
+  const gen = useAct(generateMinutes, t("toast.minutesGenerated"), (res) => base44.analytics.track({ eventName: "minutes_created", properties: { meeting_id: m.id, minutes_id: res?.id ?? null } }));
   const save = useAct(saveMinutesDraft, t("toast.draftSaved"));
   const submit = useAct(submitForReview, t("toast.sentToReview"));
   const review = useAct(completeReview, t("toast.reviewDone"));
