@@ -27,7 +27,18 @@ export default function SeatPanel({ data }) {
   const buy = async () => {
     setBusy(true);
     try {
-      await openCheckout(() => startSeatCheckout({ data: { seats: quantity } }));
+      await openCheckout(
+        () => startSeatCheckout({ data: { seats: quantity } }),
+        () => {
+          if (typeof window !== "undefined" && window.gtag) {
+            window.gtag("event", "conversion", {
+              send_to: "AW-18599761113/Fw9VCMqE7cAdENmph6VF",
+              value: quantity * Number(data.pricePerSeatUsd || 0),
+              currency: "USD",
+            });
+          }
+        }
+      );
     } catch (err) {
       toast.error(tServer(err?.message) || t("common.operationFailed"));
     } finally {

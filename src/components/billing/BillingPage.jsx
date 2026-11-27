@@ -30,6 +30,13 @@ export default function BillingPage({ checkout }) {
       .then((res) => {
         if (!res?.ok) return;
         base44.analytics.track({ eventName: "subscription_activated", properties: { seats: res.seats ?? null } });
+        if (typeof window !== "undefined" && window.gtag) {
+          window.gtag("event", "conversion", {
+            send_to: "AW-18599761113/rskGCNzD7sAdENmph6VF",
+            value: (res.seats || 0) * Number(data?.pricePerSeatUsd || 5),
+            currency: "USD",
+          });
+        }
         toast.success(c.checkoutSuccess);
         qc.invalidateQueries({ queryKey: ["billing"] });
       })

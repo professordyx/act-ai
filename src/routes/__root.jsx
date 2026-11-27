@@ -6,7 +6,47 @@ import { AuthProvider } from "@/lib/AuthContext";
 import { LanguageProvider } from "@/lib/i18n";
 import { Base44Scripts } from "base44:document";
 import { APP_ICON_URL } from "@/components/brand/ActAIMark";
+import SignupConversion from "@/components/analytics/SignupConversion";
 import appCss from "@/index.css?url";
+
+// Google Ads (gtag) — inicializado no escopo do módulo para não perder conversões disparadas
+// no primeiro render (ex.: retorno do checkout).
+if (typeof document !== "undefined" && !window.__gads_loaded) {
+  window.__gads_loaded = true;
+  window.dataLayer = window.dataLayer || [];
+  const inIframe = (() => {
+    try {
+      return window.self !== window.top;
+    } catch {
+      return true;
+    }
+  })();
+  window.gtag = function gtag() {
+    window.dataLayer.push(arguments);
+    if (inIframe) {
+      try {
+        const args = Array.prototype.slice.call(arguments);
+        const cmd = args[0];
+        window.parent.postMessage({
+          type: "base44_gtag_event",
+          event: {
+            source: "gtag",
+            timestamp: new Date().toLocaleTimeString(),
+            command: cmd,
+            params: args.slice(1),
+            type: cmd === "event" ? args[1] || "event" : cmd,
+          },
+        }, "*");
+      } catch (_e) { /* o relay não pode quebrar o gtag */ }
+    }
+  };
+  const s = document.createElement("script");
+  s.src = "https://www.googletagmanager.com/gtag/js?id=AW-18599761113";
+  s.async = true;
+  document.head.appendChild(s);
+  window.gtag("js", new Date());
+  window.gtag("config", "AW-18599761113", { send_page_view: false });
+}
 
 export const Route = createRootRoute({
   // Per-page <title>/meta come from each route's head(); this is the shared base.
@@ -35,6 +75,7 @@ function RootComponent() {
     <AuthProvider>
       <LanguageProvider>
         <Outlet />
+        <SignupConversion />
         <Toaster />
       </LanguageProvider>
     </AuthProvider>
