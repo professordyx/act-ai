@@ -47,6 +47,7 @@ export default function Hero({ copy, brand }) {
         <h1 className="font-heading text-[40px] font-bold uppercase leading-[1.05] text-white sm:text-[56px] lg:text-[76px]">{copy.title}</h1>
         <p className="max-w-[600px] text-[17px] leading-[1.6] text-[#e6eee9] md:text-[19px]">{copy.lead}</p>
         <CtaPair copy={heroCopy} to={to} search={search} />
+        <p className="max-w-[520px] text-[14px] leading-[1.6] text-[#c9d6d2]">{copy.nextStep}</p>
       </div>
     </header>
   );
