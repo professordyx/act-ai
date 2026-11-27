@@ -12,7 +12,7 @@ import ActAILogo from "@/components/brand/ActAILogo";
 const LOGO = "https://media.base44.com/images/public/workspaces/67dcbb69c0affc59bd5d5020/brands/402f67444_website_logo_addc7423.png";
 
 export const NAV = [
-  { to: "/", key: "nav.dashboard", exact: true },
+  { to: "/dashboard", key: "nav.dashboard", exact: true },
   { to: "/meetings", key: "nav.meetings" },
   { to: "/approvals", key: "nav.approvals" },
   { to: "/actions", key: "nav.actions" },
@@ -38,7 +38,7 @@ export default function AppShell() {
     <div className="flex min-h-screen flex-col bg-white">
       <header className="sticky top-0 z-30 border-b bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/dashboard" className="flex items-center gap-2">
             <ActAILogo markClass="h-8 w-auto" textClass="text-2xl" />
           </Link>
           <nav className="hidden items-center gap-6 lg:flex"><NavLinks /></nav>

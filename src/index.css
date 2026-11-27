@@ -23,3 +23,10 @@
   .nav-link[data-status="active"] { @apply text-primary; }
   .nav-link[data-status="active"]::after { content:""; @apply absolute inset-x-0 -bottom-0.5 h-0.5 rounded-full bg-primary; }
 }
+
+@keyframes landing-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: none; }
+}
+.landing-up { animation: landing-up 0.8s ease-out both; }
+.landing-up-hero { animation: landing-up 0.9s ease-out both; }
