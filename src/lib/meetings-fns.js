@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth-middleware";
 import { LANG_LOCALES, MEETING_LANGUAGES, MOCK_TRANSCRIPT, audit, db, fail, getMeetingFor, hasRole, loadMe, meetingLanguage } from "@/lib/meeting-core";
-import { loadTranscriptionConfig, transcribeWithProvider } from "@/lib/transcription.server";
+import { detectTextLanguage, loadTranscriptionConfig, transcribeWithProvider, translateTranscript } from "@/lib/transcription.server";
 
 const str = (n) => z.string().max(n);
 
@@ -225,10 +225,22 @@ export const transcribeRecording = createServerFn({ method: "POST" }).middleware
         }
       }
       if (!content.trim()) throw new Error("Transcrição vazia");
-      await sdb.entities.Transcript.update(t.id, { content, status: "concluida", provider: used?.provider, model: used?.model });
+      // O provedor transcreve no idioma falado no áudio; se diferir do idioma da reunião,
+      // o texto é convertido para o idioma configurado.
+      let translatedFrom;
+      try {
+        const detected = await detectTextLanguage(sdb, content);
+        if (detected && detected !== lang) {
+          content = await translateTranscript(sdb, content, lang);
+          translatedFrom = detected;
+        }
+      } catch (e) {
+        translatedFrom = undefined;
+      }
+      await sdb.entities.Transcript.update(t.id, { content, status: "concluida", provider: used?.provider, model: used?.model, sourceLanguage: translatedFrom });
       rec && (await sdb.entities.Recording.update(rec.id, { processingStatus: "concluido" }));
       await sdb.entities.Meeting.update(m.id, { status: "transcrito", latestTranscriptId: t.id });
-      await audit(sdb, me, { entityType: "transcript", entityId: t.id, meetingId: m.id, eventType: "transcricao_concluida", description: used ? `Transcrição concluída (${used.provider}/${used.model})` : "Transcrição concluída" });
+      await audit(sdb, me, { entityType: "transcript", entityId: t.id, meetingId: m.id, eventType: "transcricao_concluida", description: `${used ? `Transcrição concluída (${used.provider}/${used.model})` : "Transcrição concluída"}${translatedFrom ? `, convertida de ${translatedFrom} para ${lang}` : ""}` });
       return { id: t.id };
     } catch (err) {
       await sdb.entities.Transcript.update(t.id, { status: "falhou", errorMessage: String(err?.message || err).slice(0, 500) });

@@ -191,6 +191,7 @@ const pt = {
   "tr.none": "Ainda não há transcrição.",
   "tr.source": "Fonte",
   "tr.language": "Idioma da reunião",
+  "tr.translatedFrom": "convertida do",
 
   "min.approved": "Ata aprovada",
   "min.draft": "Minuta de ata",
@@ -516,6 +517,7 @@ const en = {
   "tr.none": "No transcript yet.",
   "tr.source": "Source",
   "tr.language": "Meeting language",
+  "tr.translatedFrom": "converted from",
 
   "min.approved": "Approved minutes",
   "min.draft": "Minutes draft",
@@ -841,6 +843,7 @@ const es = {
   "tr.none": "Aún no hay transcripción.",
   "tr.source": "Origen",
   "tr.language": "Idioma de la reunión",
+  "tr.translatedFrom": "convertida del",
 
   "min.approved": "Acta aprobada",
   "min.draft": "Acta borrador",

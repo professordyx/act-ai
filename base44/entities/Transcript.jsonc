@@ -12,6 +12,10 @@
       "type": "string",
       "default": "pt-BR"
     },
+    "sourceLanguage": {
+      "type": "string",
+      "description": "Idioma detectado no \u00e1udio quando o texto precisou ser traduzido para o idioma da reuni\u00e3o"
+    },
     "content": {
       "type": "string"
     },

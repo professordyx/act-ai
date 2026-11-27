@@ -127,6 +127,45 @@ async function assemblyai(cfg, url, language) {
   fail("O AssemblyAI ainda está processando o áudio. Tente novamente em alguns instantes.", 504);
 }
 
+// Garante que o texto final esteja no idioma configurado na reunião: os provedores
+// transcrevem no idioma falado no áudio, não no idioma pedido.
+const LANG_LABELS = { pt: "português do Brasil", en: "inglês", es: "espanhol" };
+
+export async function detectTextLanguage(sdb, text) {
+  const res = await sdb.integrations.Core.InvokeLLM({
+    prompt: `Identifique o idioma predominante do texto abaixo. Responda apenas com o código: pt (português), en (inglês) ou es (espanhol).\n\n"""${text.slice(0, 2000)}"""`,
+    response_json_schema: { type: "object", properties: { language: { type: "string" } }, required: ["language"] },
+  });
+  const code = String(res?.language || "").slice(0, 2).toLowerCase();
+  return ["pt", "en", "es"].includes(code) ? code : null;
+}
+
+const chunkText = (text, size = 7000) => {
+  const chunks = [];
+  let rest = text;
+  while (rest.length > size) {
+    const cut = rest.lastIndexOf("\n", size);
+    const at = cut > size / 2 ? cut : size;
+    chunks.push(rest.slice(0, at));
+    rest = rest.slice(at);
+  }
+  if (rest.trim()) chunks.push(rest);
+  return chunks;
+};
+
+export async function translateTranscript(sdb, text, target) {
+  const label = LANG_LABELS[target] || LANG_LABELS.pt;
+  const out = [];
+  for (const chunk of chunkText(text)) {
+    const res = await sdb.integrations.Core.InvokeLLM({
+      prompt: `Traduza para ${label} o trecho de transcrição de reunião abaixo. Preserve nomes próprios, números, datas, siglas e a ordem das falas. Não resuma, não acrescente informação e não comente: devolva somente a tradução.\n\n"""${chunk}"""`,
+      response_json_schema: { type: "object", properties: { text: { type: "string" } }, required: ["text"] },
+    });
+    out.push(String(res?.text || "").trim() || chunk);
+  }
+  return out.join("\n");
+}
+
 export async function transcribeWithProvider(cfg, sdb, fileUri, mimeType, language) {
   const url = await signedUrlFor(sdb, fileUri);
   if (cfg.provider === "openai") return openai(cfg, url, mimeType, language);
