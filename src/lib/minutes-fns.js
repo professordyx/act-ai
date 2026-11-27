@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth-middleware";
-import { ACTIONS_SCHEMA, MINUTES_SCHEMA, audit, db, fail, getMeetingFor, hasRole, isoOrUndefined, loadMe, minutesPrompt, notify, sha256 } from "@/lib/meeting-core";
+import { ACTIONS_SCHEMA, MINUTES_SCHEMA, audit, db, fail, getMeetingFor, hasRole, isoOrUndefined, langName, loadMe, meetingLanguage, minutesPrompt, notify, sha256 } from "@/lib/meeting-core";
 import { resolveTemplate } from "@/lib/minutes-templates";
 
 const id = z.string().max(60);
@@ -170,7 +170,7 @@ export const extractActions = createServerFn({ method: "POST" }).middleware([req
     const source = mi?.content || t?.content;
     if (!source) fail("Não há ata ou transcrição para analisar");
     const res = await sdb.integrations.Core.InvokeLLM({
-      prompt: `Extraia as ações (compromissos) do texto de uma reunião interna, em português. Não invente responsáveis nem prazos: deixe vazio quando ausentes. dueDate em AAAA-MM-DD apenas se explícito.\n\n${source.slice(0, 60000)}`,
+      prompt: `Extraia as ações (compromissos) do texto de uma reunião interna, em ${langName(meetingLanguage(m))}. Escreva os títulos e descrições nesse idioma e não invente responsáveis nem prazos: deixe vazio quando ausentes. dueDate em AAAA-MM-DD apenas se explícito.\n\n${source.slice(0, 60000)}`,
       response_json_schema: ACTIONS_SCHEMA,
     });
     if (!res || !Array.isArray(res.actions)) fail("Não foi possível extrair ações do texto", 502);

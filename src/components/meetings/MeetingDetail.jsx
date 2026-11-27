@@ -33,8 +33,8 @@ export default function MeetingDetail({ id }) {
           </div>
           <StatusBadge status={m.status} />
         </div>
-        <div className="mt-4 grid gap-1 text-sm text-slate-300 sm:grid-cols-3">
-          <span>{t("detail.organizer")}: {m.organizerUserId}</span><span>{t("detail.reviewer")}: {m.reviewerUserId}</span><span>{t("detail.approver")}: {m.approverUserId}</span>
+        <div className="mt-4 grid gap-1 text-sm text-slate-300 sm:grid-cols-2 lg:grid-cols-4">
+          <span>{t("detail.organizer")}: {m.organizerUserId}</span><span>{t("detail.reviewer")}: {m.reviewerUserId}</span><span>{t("detail.approver")}: {m.approverUserId}</span><span>{t("form.language")}: {t(`lang.${m.language || "pt"}`)}</span>
         </div>
       </div>
       <div className="grid gap-6 lg:grid-cols-3">

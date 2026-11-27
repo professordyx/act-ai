@@ -6,6 +6,13 @@ import { createClientFromRequest } from "@base44/sdk";
 import { getRequest } from "@tanstack/react-start/server";
 
 export const ALL_ROLES = ["admin", "organizer", "reviewer", "approver", "participant", "auditor"];
+
+// Idioma da reunião: define o idioma da transcrição e da ata gerada.
+export const MEETING_LANGUAGES = ["pt", "en", "es"];
+export const LANG_LOCALES = { pt: "pt-BR", en: "en-US", es: "es-ES" };
+const LANG_NAMES = { pt: "português do Brasil", en: "inglês", es: "espanhol" };
+export const meetingLanguage = (m) => (MEETING_LANGUAGES.includes(m?.language) ? m.language : "pt");
+export const langName = (code) => LANG_NAMES[code] || LANG_NAMES.pt;
 // Cliente de serviço: usa o contexto quando ele traz getBase44 e, se não, cria o cliente
 // a partir do próprio request (o mesmo que o middleware faria).
 const visitorClient = (ctx) =>
@@ -132,11 +139,14 @@ export const MINUTES_SCHEMA = {
 export const ACTIONS_SCHEMA = { type: "object", properties: { actions: ACTION_ITEMS }, required: ["actions"] };
 
 export function minutesPrompt(meeting, participants, transcript, template) {
+  const idioma = langName(meetingLanguage(meeting));
   const format = template?.prompt?.trim()
-    ? `\n\nFORMATO OBRIGATÓRIO DA ATA (template "${template.name}"):\nSubstitua a estrutura sugerida na regra 3 pela estrutura, seções e tom descritos abaixo. Mantenha as demais regras (não inventar fatos, marcar "A VALIDAR", prazos e formato de retorno).\n---\n${template.prompt.trim().slice(0, 6000)}\n---`
+    ? `\n\nFORMATO OBRIGATÓRIO DA ATA (template "${template.name}"):\nSubstitua a estrutura sugerida na regra 3 pela estrutura, seções e tom descritos abaixo. Mantenha as demais regras (não inventar fatos, marcar "A VALIDAR", prazos e formato de retorno). O idioma de saída definido acima prevalece sobre qualquer idioma indicado no template.\n---\n${template.prompt.trim().slice(0, 6000)}\n---`
     : "";
   return `Você é um assistente especializado em redação de atas corporativas auditáveis.
-Gere uma minuta de ata de reunião interna, em português do Brasil, com base EXCLUSIVAMENTE na transcrição fornecida.
+Gere uma minuta de ata de reunião interna, em ${idioma}, com base EXCLUSIVAMENTE na transcrição fornecida.
+
+IDIOMA DE SAÍDA: ${idioma}. Escreva em ${idioma} TODO o conteúdo retornado (minutesText, summary, topics, decisions, risks e actions), mesmo que a transcrição esteja em outro idioma. Preserve nomes próprios, siglas e citações exatamente como no original. "A VALIDAR" é um rótulo do sistema: mantenha-o escrito exatamente assim em qualquer idioma.
 
 Regras:
 1. Não invente fatos, nomes, decisões ou prazos.

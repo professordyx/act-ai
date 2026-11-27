@@ -12,7 +12,7 @@ import { createMeeting, listProfiles } from "@/lib/meetings-fns";
 import MeetingCreated from "@/components/meetings/MeetingCreated";
 import { useAct } from "@/hooks/use-act";
 import { LOCATION_KEYS } from "@/lib/labels";
-import { useI18n } from "@/lib/i18n";
+import { LANGS, useI18n } from "@/lib/i18n";
 
 function ProfileSelect({ label, role, value, onChange, profiles }) {
   const { t } = useI18n();
@@ -30,10 +30,10 @@ function ProfileSelect({ label, role, value, onChange, profiles }) {
 }
 
 export default function MeetingForm() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const navigate = useNavigate();
   const { data: profiles = [] } = useQuery({ queryKey: ["profiles"], queryFn: () => listProfiles() });
-  const [f, setF] = useState({ title: "", description: "", scheduledAt: "", locationType: "virtual", locationDetails: "", reviewerUserId: "", approverUserId: "", consentCaptured: false });
+  const [f, setF] = useState({ title: "", description: "", language: lang || "pt", scheduledAt: "", locationType: "virtual", locationDetails: "", reviewerUserId: "", approverUserId: "", consentCaptured: false });
   const [parts, setParts] = useState([{ name: "", email: "" }]);
   const [created, setCreated] = useState(null);
   const save = useAct(createMeeting, t("toast.meetingCreated"));
@@ -60,7 +60,7 @@ export default function MeetingForm() {
     <form onSubmit={submit} className="card-soft space-y-5 p-5 sm:p-8">
       <div className="space-y-1.5"><Label>{t("form.title")}</Label><Input value={f.title} onChange={set("title")} placeholder={t("form.titlePlaceholder")} required /></div>
       <div className="space-y-1.5"><Label>{t("form.description")}</Label><Textarea value={f.description} onChange={set("description")} rows={3} /></div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-1.5"><Label>{t("form.date")}</Label><Input type="datetime-local" value={f.scheduledAt} onChange={set("scheduledAt")} required /></div>
         <div className="space-y-1.5">
           <Label>{t("form.type")}</Label>
@@ -68,6 +68,14 @@ export default function MeetingForm() {
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>{LOCATION_KEYS.map((k) => <SelectItem key={k} value={k}>{t(`location.${k}`)}</SelectItem>)}</SelectContent>
           </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label>{t("form.language")}</Label>
+          <Select value={f.language} onValueChange={(v) => setF((p) => ({ ...p, language: v }))}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>{LANGS.map((l) => <SelectItem key={l.code} value={l.code}>{t(`lang.${l.code}`)}</SelectItem>)}</SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">{t("form.languageHint")}</p>
         </div>
       </div>
       <div className="space-y-1.5"><Label>{t("form.location")}</Label><Input value={f.locationDetails} onChange={set("locationDetails")} /></div>

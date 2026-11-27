@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth-middleware";
-import { MOCK_TRANSCRIPT, audit, db, fail, getMeetingFor, hasRole, loadMe } from "@/lib/meeting-core";
+import { LANG_LOCALES, MEETING_LANGUAGES, MOCK_TRANSCRIPT, audit, db, fail, getMeetingFor, hasRole, loadMe, meetingLanguage } from "@/lib/meeting-core";
 import { loadTranscriptionConfig, transcribeWithProvider } from "@/lib/transcription.server";
 
 const str = (n) => z.string().max(n);
@@ -23,6 +23,7 @@ export const createMeeting = createServerFn({ method: "POST" }).middleware([requ
     z.object({
       title: str(200).min(3),
       description: str(2000).optional(),
+      language: z.enum(MEETING_LANGUAGES).optional(),
       scheduledAt: str(40),
       locationType: z.enum(["presencial", "virtual", "hibrida"]),
       locationDetails: str(300).optional(),
@@ -41,6 +42,7 @@ export const createMeeting = createServerFn({ method: "POST" }).middleware([requ
     const m = await sdb.entities.Meeting.create({
       title: data.title,
       description: data.description,
+      language: data.language || "pt",
       scheduledAt: new Date(data.scheduledAt).toISOString(),
       locationType: data.locationType,
       locationDetails: data.locationDetails,
@@ -136,6 +138,20 @@ export const getDashboard = createServerFn({ method: "POST" }).middleware([requi
   };
 });
 
+// Permite corrigir o idioma de uma reunião já criada antes de transcrever/gerar a ata.
+export const updateMeetingLanguage = createServerFn({ method: "POST" }).middleware([requireUser])
+  .validator(z.object({ meetingId: str(60), language: z.enum(MEETING_LANGUAGES) }))
+  .handler(async ({ context, data }) => {
+    const sdb = db(context);
+    const me = await loadMe(sdb, context.user);
+    const { m, rel } = await getMeetingFor(sdb, me, data.meetingId);
+    if (!rel.canEdit) fail("Sem permissão", 403);
+    if (["em_revisao", "aguardando_aprovacao", "aprovada", "arquivada"].includes(m.status)) fail("A transcrição não pode ser refeita neste status");
+    await sdb.entities.Meeting.update(m.id, { language: data.language });
+    await audit(sdb, me, { entityType: "meeting", entityId: m.id, meetingId: m.id, eventType: "idioma_alterado", description: `Idioma da reunião definido como ${data.language}`, old: { language: m.language || "pt" }, next: { language: data.language } });
+    return { ok: true };
+  });
+
 export const getMeetingDetails = createServerFn({ method: "POST" }).middleware([requireUser])
   .validator(z.object({ id: str(60) }))
   .handler(async ({ context, data }) => {
@@ -187,7 +203,8 @@ export const transcribeRecording = createServerFn({ method: "POST" }).middleware
     const rec = data.recordingId ? await sdb.entities.Recording.get(data.recordingId).catch(() => null) : null;
     if (data.mode !== "manual" && !rec) fail("Envie uma gravação válida antes de transcrever");
     if (data.mode === "manual" && !data.text?.trim()) fail("Cole o texto da transcrição");
-    const t = await sdb.entities.Transcript.create({ meetingId: m.id, recordingId: rec?.id, language: "pt-BR", content: "", status: "processando", source: data.mode === "auto" ? "automatica" : data.mode, createdByUserId: me.email });
+    const lang = meetingLanguage(m);
+    const t = await sdb.entities.Transcript.create({ meetingId: m.id, recordingId: rec?.id, language: LANG_LOCALES[lang], content: "", status: "processando", source: data.mode === "auto" ? "automatica" : data.mode, createdByUserId: me.email });
     await sdb.entities.Meeting.update(m.id, { status: "processando_transcricao" });
     await audit(sdb, me, { entityType: "transcript", entityId: t.id, meetingId: m.id, eventType: "transcricao_iniciada", description: `Transcrição iniciada (modo ${data.mode})` });
     let used = null;
@@ -201,7 +218,7 @@ export const transcribeRecording = createServerFn({ method: "POST" }).middleware
         rec && (await sdb.entities.Recording.update(rec.id, { processingStatus: "processando" }));
         used = await loadTranscriptionConfig(sdb);
         if (used) {
-          content = await transcribeWithProvider(used, sdb, rec.fileUrl, rec.mimeType);
+          content = await transcribeWithProvider(used, sdb, rec.fileUrl, rec.mimeType, lang);
         } else {
           content = await sdb.integrations.Core.TranscribeAudio({ audio_url: rec.fileUrl });
           if (typeof content !== "string") content = content?.text || JSON.stringify(content);

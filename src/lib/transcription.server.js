@@ -5,6 +5,10 @@ import { providerById } from "@/lib/transcription-providers";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Idioma da reunião → código aceito por cada provedor.
+const GOOGLE_LANG = { pt: "pt-BR", en: "en-US", es: "es-ES" };
+const ISO_LANG = { pt: "pt", en: "en", es: "es" };
+
 export async function loadTranscriptionConfig(sdb) {
   const page = await sdb.entities.TranscriptionSettings.filter({ isActive: true }, { limit: 1 });
   const s = page.items[0];
@@ -60,13 +64,14 @@ const toBase64 = (buf) => {
   return btoa(binary);
 };
 
-async function openai(cfg, url, mime) {
+async function openai(cfg, url, mime, language) {
   const bytes = await download(url);
   if (bytes.byteLength > 25 * 1024 * 1024) fail("A OpenAI aceita áudios de até 25 MB", 413);
   const form = new FormData();
   form.append("file", new Blob([bytes], { type: mime || "audio/webm" }), `audio.${kindOf(mime)}`);
   form.append("model", cfg.model);
   form.append("response_format", "json");
+  if (ISO_LANG[language]) form.append("language", ISO_LANG[language]);
   const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
     method: "POST",
     headers: { Authorization: `Bearer ${cfg.apiKey}` },
@@ -85,7 +90,7 @@ const GOOGLE_CONFIG = {
   wav: {},
 };
 
-async function google(cfg, url, mime) {
+async function google(cfg, url, mime, language) {
   const kind = kindOf(mime);
   if (!(kind in GOOGLE_CONFIG)) fail("O Google Speech-to-Text não aceita este formato de áudio. Use WebM, OGG, WAV, FLAC ou MP3.");
   const bytes = await download(url);
@@ -94,7 +99,7 @@ async function google(cfg, url, mime) {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      config: { languageCode: "pt-BR", model: cfg.model, ...GOOGLE_CONFIG[kind] },
+      config: { languageCode: GOOGLE_LANG[language] || GOOGLE_LANG.pt, model: cfg.model, ...GOOGLE_CONFIG[kind] },
       audio: { content: toBase64(bytes) },
     }),
   });
@@ -103,11 +108,11 @@ async function google(cfg, url, mime) {
   return (body?.results || []).map((r) => r.alternatives?.[0]?.transcript || "").join(" ").trim();
 }
 
-async function assemblyai(cfg, url) {
+async function assemblyai(cfg, url, language) {
   const created = await fetch("https://api.assemblyai.com/v2/transcript", {
     method: "POST",
     headers: { authorization: cfg.apiKey, "content-type": "application/json" },
-    body: JSON.stringify({ audio_url: url, speech_model: cfg.model === "nano" ? "nano" : "best", language_code: "pt" }),
+    body: JSON.stringify({ audio_url: url, speech_model: cfg.model === "nano" ? "nano" : "best", language_code: ISO_LANG[language] || ISO_LANG.pt }),
   });
   const job = await created.json().catch(() => null);
   if (!created.ok || !job?.id) providerError("AssemblyAI", created.status, job);
@@ -122,10 +127,10 @@ async function assemblyai(cfg, url) {
   fail("O AssemblyAI ainda está processando o áudio. Tente novamente em alguns instantes.", 504);
 }
 
-export async function transcribeWithProvider(cfg, sdb, fileUri, mimeType) {
+export async function transcribeWithProvider(cfg, sdb, fileUri, mimeType, language) {
   const url = await signedUrlFor(sdb, fileUri);
-  if (cfg.provider === "openai") return openai(cfg, url, mimeType);
-  if (cfg.provider === "google") return google(cfg, url, mimeType);
-  if (cfg.provider === "assemblyai") return assemblyai(cfg, url);
+  if (cfg.provider === "openai") return openai(cfg, url, mimeType, language);
+  if (cfg.provider === "google") return google(cfg, url, mimeType, language);
+  if (cfg.provider === "assemblyai") return assemblyai(cfg, url, language);
   fail("Provedor de transcrição não suportado");
 }
