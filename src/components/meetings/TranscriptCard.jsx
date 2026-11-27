@@ -6,6 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { transcribeRecording, updateMeetingLanguage } from "@/lib/meetings-fns";
 import { useAct } from "@/hooks/use-act";
 import { LANGS, useI18n } from "@/lib/i18n";
+import FieldHelp from "@/components/help/FieldHelp";
+import HelpTip from "@/components/help/HelpTip";
 
 export default function TranscriptCard({ data }) {
   const { t } = useI18n();
@@ -27,7 +29,7 @@ export default function TranscriptCard({ data }) {
           <Button size="sm" variant="outline" onClick={() => setManual((v) => !v)}>{t("tr.paste")}</Button>
           <Button size="sm" variant="ghost" disabled={!rec || run.isPending} onClick={() => go("mock")}>{t("tr.mock")}</Button>
           <div className="ml-auto flex items-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground">{t("tr.language")}</span>
+            <span className="flex items-center gap-1 text-xs font-semibold text-muted-foreground">{t("tr.language")}<HelpTip helpKey="meeting.language" /></span>
             <Select value={m.language || "pt"} onValueChange={(v) => setLang.mutate({ meetingId: m.id, language: v })} disabled={setLang.isPending}>
               <SelectTrigger className="h-8 w-[150px] text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>{LANGS.map((l) => <SelectItem key={l.code} value={l.code}>{t(`lang.${l.code}`)}</SelectItem>)}</SelectContent>
@@ -37,7 +39,9 @@ export default function TranscriptCard({ data }) {
       )}
       {manual && (
         <div className="mb-3 space-y-2">
-          <Textarea rows={6} value={text} onChange={(e) => setText(e.target.value)} placeholder={t("tr.pastePlaceholder")} />
+          <FieldHelp helpKey="transcript.text">
+            <Textarea rows={6} value={text} onChange={(e) => setText(e.target.value)} placeholder={t("tr.pastePlaceholder")} />
+          </FieldHelp>
           <Button size="sm" disabled={!text.trim() || run.isPending} onClick={() => go("manual")}>{t("tr.save")}</Button>
         </div>
       )}

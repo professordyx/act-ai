@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authed/meetings/new")({
     const blocked = !!data && !data.isPaid && data.usedToday >= data.freeMeetingsPerDay;
     return (
       <div className="mx-auto max-w-3xl">
-        <PageTitle eyebrow={t("mt.eyebrow")} title={t("mt.newTitle")} />
+        <PageTitle eyebrow={t("mt.eyebrow")} title={t("mt.newTitle")} help="nova-reuniao" />
         {isLoading ? <Loading /> : blocked ? (
           <div className="card-soft space-y-3 p-6">
             <Lock className="h-5 w-5 text-primary" />

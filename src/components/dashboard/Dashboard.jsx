@@ -21,7 +21,7 @@ export default function Dashboard() {
   ];
   return (
     <div className="space-y-8">
-      <PageTitle eyebrow={t("dash.eyebrow")} title={t("dash.title")} />
+      <PageTitle eyebrow={t("dash.eyebrow")} title={t("dash.title")} help="painel" />
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
         {kpis.map((k) => (
           <div key={k.label} className={k.featured ? "card-featured p-5" : "card-soft p-5"}>

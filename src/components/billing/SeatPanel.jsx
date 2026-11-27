@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useBillingCopy } from "@/lib/billing-i18n";
 import { useI18n } from "@/lib/i18n";
+import FieldHelp from "@/components/help/FieldHelp";
+import HelpTip from "@/components/help/HelpTip";
 
 export default function SeatPanel({ data }) {
   const c = useBillingCopy();
@@ -40,10 +42,9 @@ export default function SeatPanel({ data }) {
           <h2 className="font-heading text-lg font-semibold uppercase">{c.buyTitle}</h2>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{c.buyHint}</p>
           <div className="mt-3 flex flex-wrap items-end gap-3">
-            <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {c.seatsLabel}
-              <Input type="number" min={1} max={500} value={seats} onChange={(e) => setSeats(e.target.value)} className="mt-1 w-28" />
-            </label>
+            <FieldHelp helpKey="billing.seats" label={c.seatsLabel} className="w-32">
+              <Input type="number" min={1} max={500} value={seats} onChange={(e) => setSeats(e.target.value)} />
+            </FieldHelp>
             <Button className="rounded-full font-bold" disabled={busy} onClick={buy}>
               <CreditCard className="mr-2 h-4 w-4" />{busy ? c.buying : c.buy}
             </Button>
@@ -53,7 +54,10 @@ export default function SeatPanel({ data }) {
         </div>
       )}
       <div>
-        <h2 className="font-heading text-lg font-semibold uppercase">{c.assignTitle}</h2>
+        <h2 className="flex items-center gap-1.5 font-heading text-lg font-semibold uppercase">
+          {c.assignTitle}
+          <HelpTip helpKey="billing.seats" />
+        </h2>
         <p className="mt-1 text-sm text-muted-foreground">{c.assignHint}</p>
         {!data.active && <p className="mt-2 text-sm text-muted-foreground">{c.noSubscription}</p>}
         {data.active && data.seats > 0 && full && <p className="mt-2 rounded-lg bg-amber-50 p-2 text-sm text-amber-900">{c.seatLimit}</p>}

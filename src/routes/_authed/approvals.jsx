@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authed/approvals")({
     const { data, isLoading, error } = useQuery({ queryKey: ["dashboard"], queryFn: () => getDashboard() });
     return (
       <div>
-        <PageTitle eyebrow={t("appr.eyebrow")} title={t("appr.title")} />
+        <PageTitle eyebrow={t("appr.eyebrow")} title={t("appr.title")} help="aprovacoes" />
         {isLoading ? <Loading /> : error ? <ErrorState error={error} /> : (
           <div className="grid gap-6 lg:grid-cols-2">
             <PendingList title={t("appr.review")} items={data.pendingReviews} empty={t("dash.empty.review")} />

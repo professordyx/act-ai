@@ -8,16 +8,16 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { createMinutesTemplate, deleteMinutesTemplate, listMinutesTemplates, updateMinutesTemplate } from "@/lib/template-fns";
 import { useAct } from "@/hooks/use-act";
 import { useI18n } from "@/lib/i18n";
+import FieldHelp from "@/components/help/FieldHelp";
 
 const EMPTY = { id: null, name: "", description: "", prompt: "" };
 
-function Field({ label, children, hint }) {
+function Field({ helpKey, label, children, hint }) {
   return (
-    <div>
-      <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</label>
+    <FieldHelp helpKey={helpKey} label={label}>
       {children}
       {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
-    </div>
+    </FieldHelp>
   );
 }
 
@@ -90,9 +90,9 @@ export default function TemplatesPanel() {
         <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>{form?.id ? t("tpl.edit") : t("tpl.new")}</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <Field label={t("tpl.name")}><Input value={form?.name || ""} onChange={set("name")} /></Field>
-            <Field label={t("tpl.descriptionLabel")}><Input value={form?.description || ""} onChange={set("description")} /></Field>
-            <Field label={t("tpl.promptLabel")} hint={t("tpl.promptHint")}>
+            <Field helpKey="tpl.name" label={t("tpl.name")}><Input value={form?.name || ""} onChange={set("name")} /></Field>
+            <Field helpKey="tpl.description" label={t("tpl.descriptionLabel")}><Input value={form?.description || ""} onChange={set("description")} /></Field>
+            <Field helpKey="tpl.prompt" label={t("tpl.promptLabel")} hint={t("tpl.promptHint")}>
               <Textarea rows={10} value={form?.prompt || ""} onChange={set("prompt")} className="font-body" />
             </Field>
           </div>

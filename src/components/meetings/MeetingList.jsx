@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import FieldHelp from "@/components/help/FieldHelp";
 import { listMeetings } from "@/lib/meetings-fns";
 import { LOCATION_KEYS, STATUS_KEYS, fmt } from "@/lib/labels";
 import StatusBadge from "@/components/shared/StatusBadge";
@@ -35,13 +35,11 @@ export default function MeetingList({ fixedStatuses, initialQuery = "" }) {
   return (
     <div className="space-y-4">
       <div className="card-soft grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="space-y-1.5 lg:col-span-2">
-          <Label>{t("list.search")}</Label>
+        <FieldHelp helpKey="list.search" label={t("list.search")} className="lg:col-span-2">
           <Input placeholder={t("search.placeholder")} value={f.text} onChange={set("text")} />
-        </div>
+        </FieldHelp>
         {!fixedStatuses && (
-          <div className="space-y-1.5">
-            <Label>{t("common.status")}</Label>
+          <FieldHelp helpKey="list.status" label={t("common.status")}>
             <Select value={f.status} onValueChange={(v) => setF((p) => ({ ...p, status: v }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -49,10 +47,9 @@ export default function MeetingList({ fixedStatuses, initialQuery = "" }) {
                 {STATUS_KEYS.map((k) => <SelectItem key={k} value={k}>{t(`status.${k}`)}</SelectItem>)}
               </SelectContent>
             </Select>
-          </div>
+          </FieldHelp>
         )}
-        <div className="space-y-1.5">
-          <Label>{t("list.type")}</Label>
+        <FieldHelp helpKey="list.type" label={t("list.type")}>
           <Select value={f.type} onValueChange={(v) => setF((p) => ({ ...p, type: v }))}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -60,11 +57,11 @@ export default function MeetingList({ fixedStatuses, initialQuery = "" }) {
               {LOCATION_KEYS.map((k) => <SelectItem key={k} value={k}>{t(`location.${k}`)}</SelectItem>)}
             </SelectContent>
           </Select>
-        </div>
-        <div className="space-y-1.5"><Label>{t("list.from")}</Label><Input type="date" value={f.from} onChange={set("from")} /></div>
-        <div className="space-y-1.5"><Label>{t("list.to")}</Label><Input type="date" value={f.to} onChange={set("to")} /></div>
-        <div className="space-y-1.5"><Label>{t("list.organizer")}</Label><Input placeholder={t("common.email")} value={f.organizer} onChange={set("organizer")} /></div>
-        <div className="space-y-1.5"><Label>{t("list.participant")}</Label><Input placeholder={t("common.email")} value={f.participant} onChange={set("participant")} /></div>
+        </FieldHelp>
+        <FieldHelp helpKey="list.from" label={t("list.from")}><Input type="date" value={f.from} onChange={set("from")} /></FieldHelp>
+        <FieldHelp helpKey="list.to" label={t("list.to")}><Input type="date" value={f.to} onChange={set("to")} /></FieldHelp>
+        <FieldHelp helpKey="list.organizer" label={t("list.organizer")}><Input placeholder={t("common.email")} value={f.organizer} onChange={set("organizer")} /></FieldHelp>
+        <FieldHelp helpKey="list.participant" label={t("list.participant")}><Input placeholder={t("common.email")} value={f.participant} onChange={set("participant")} /></FieldHelp>
       </div>
       {isLoading ? <Loading /> : error ? <ErrorState error={error} /> : data.length === 0 ? <Empty text={t("list.empty")} /> : (
         <div className="grid gap-3">

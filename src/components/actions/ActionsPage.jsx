@@ -7,6 +7,8 @@ import { listActions, updateAction } from "@/lib/minutes-fns";
 import { useAct } from "@/hooks/use-act";
 import { ACTION_STATUS_KEYS, fmt } from "@/lib/labels";
 import ActionStatusSelect from "@/components/meetings/ActionStatusSelect";
+import FieldHelp from "@/components/help/FieldHelp";
+import HelpTip from "@/components/help/HelpTip";
 import { Empty, ErrorState, Loading, PageTitle } from "@/components/shared/States";
 import { useI18n } from "@/lib/i18n";
 
@@ -21,13 +23,18 @@ export default function ActionsPage() {
   });
   return (
     <div>
-      <PageTitle eyebrow={t("actp.eyebrow")} title={t("actp.title")} />
-      <div className="mb-4 flex flex-wrap items-center gap-4">
-        <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
-          <SelectContent><SelectItem value="all">{t("common.allStatuses")}</SelectItem>{ACTION_STATUS_KEYS.map((k) => <SelectItem key={k} value={k}>{t(`action.${k}`)}</SelectItem>)}</SelectContent>
-        </Select>
-        <label className="flex items-center gap-2 text-sm"><Switch checked={onlyMine} onCheckedChange={setOnlyMine} />{t("actp.onlyMine")}</label>
+      <PageTitle eyebrow={t("actp.eyebrow")} title={t("actp.title")} help="acoes" />
+      <div className="mb-4 flex flex-wrap items-end gap-4">
+        <FieldHelp helpKey="actions.status" label={t("common.status")} className="w-48">
+          <Select value={status} onValueChange={setStatus}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent><SelectItem value="all">{t("common.allStatuses")}</SelectItem>{ACTION_STATUS_KEYS.map((k) => <SelectItem key={k} value={k}>{t(`action.${k}`)}</SelectItem>)}</SelectContent>
+          </Select>
+        </FieldHelp>
+        <div className="flex items-center gap-1.5 pb-2">
+          <label className="flex items-center gap-2 text-sm"><Switch checked={onlyMine} onCheckedChange={setOnlyMine} />{t("actp.onlyMine")}</label>
+          <HelpTip helpKey="actions.onlyMine" />
+        </div>
       </div>
       {isLoading ? <Loading /> : error ? <ErrorState error={error} /> : data.length === 0 ? <Empty text={t("actp.empty")} /> : (
         <div className="grid gap-3">

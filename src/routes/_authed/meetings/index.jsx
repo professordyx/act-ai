@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authed/meetings/")({
     const { q } = Route.useSearch();
     return (
       <div>
-        <PageTitle eyebrow={t("mt.eyebrow")} title={t("mt.title")}>
+        <PageTitle eyebrow={t("mt.eyebrow")} title={t("mt.title")} help="reunioes">
           <Button asChild className="rounded-full font-bold"><Link to="/meetings/new"><Plus className="mr-1 h-4 w-4" />{t("common.newMeeting")}</Link></Button>
         </PageTitle>
         <MeetingList initialQuery={q || ""} />

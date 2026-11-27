@@ -6,6 +6,7 @@ import { createAction, extractActions, updateAction } from "@/lib/minutes-fns";
 import { useAct } from "@/hooks/use-act";
 import { fmt } from "@/lib/labels";
 import ActionStatusSelect from "@/components/meetings/ActionStatusSelect";
+import FieldHelp from "@/components/help/FieldHelp";
 import { useI18n } from "@/lib/i18n";
 
 export default function ActionsCard({ data }) {
@@ -38,9 +39,16 @@ export default function ActionsCard({ data }) {
       )}
       {canAdd && (
         <form className="mt-3 space-y-2 border-t pt-3" onSubmit={(e) => { e.preventDefault(); add.mutate({ meetingId: m.id, ...f, assignedToUserId: f.assignedToUserId || undefined, dueDate: f.dueDate || undefined, assignedToName: f.assignedToName || undefined }, { onSuccess: () => setF({ title: "", assignedToName: "", assignedToUserId: "", dueDate: "" }) }); }}>
-          <Input placeholder={t("act.new")} value={f.title} onChange={set("title")} />
-          <div className="grid grid-cols-2 gap-2"><Input placeholder={t("act.owner")} value={f.assignedToName} onChange={set("assignedToName")} /><Input placeholder={t("act.email")} value={f.assignedToUserId} onChange={set("assignedToUserId")} /></div>
-          <div className="flex gap-2"><Input type="date" value={f.dueDate} onChange={set("dueDate")} /><Button type="submit" size="sm" disabled={f.title.trim().length < 2 || add.isPending}>{t("act.add")}</Button></div>
+          <FieldHelp helpKey="actions.newTitle">
+            <Input placeholder={t("act.new")} value={f.title} onChange={set("title")} />
+          </FieldHelp>
+          <FieldHelp helpKey="actions.owner">
+            <div className="grid grid-cols-2 gap-2"><Input placeholder={t("act.owner")} value={f.assignedToName} onChange={set("assignedToName")} /><Input placeholder={t("act.email")} value={f.assignedToUserId} onChange={set("assignedToUserId")} /></div>
+          </FieldHelp>
+          <div className="flex items-end gap-2">
+            <FieldHelp helpKey="actions.dueDate" className="flex-1"><Input type="date" value={f.dueDate} onChange={set("dueDate")} /></FieldHelp>
+            <Button type="submit" size="sm" disabled={f.title.trim().length < 2 || add.isPending}>{t("act.add")}</Button>
+          </div>
         </form>
       )}
     </section>

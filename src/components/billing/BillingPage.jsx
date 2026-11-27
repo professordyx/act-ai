@@ -41,7 +41,7 @@ export default function BillingPage({ checkout }) {
   if (error) return <ErrorState error={error} />;
   return (
     <div className="space-y-6">
-      <PageTitle eyebrow={c.eyebrow} title={c.title}>
+      <PageTitle eyebrow={c.eyebrow} title={c.title} help="assinatura">
         <Link to="/planos" className="text-sm font-semibold text-primary hover:underline">{c.publicLink}</Link>
       </PageTitle>
       <SubscriptionCard data={data} />

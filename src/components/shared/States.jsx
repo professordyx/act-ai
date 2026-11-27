@@ -1,5 +1,6 @@
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import PageHelp from "@/components/help/PageHelp";
 
 export function Loading({ text }) {
   const { t } = useI18n();
@@ -12,10 +13,16 @@ export function ErrorState({ error }) {
   const { t, tServer } = useI18n();
   return <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{tServer(error?.message) || t("common.error")}</div>;
 }
-export function PageTitle({ eyebrow, title, children }) {
+export function PageTitle({ eyebrow, title, help, children }) {
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-      <div><p className="eyebrow">{eyebrow}</p><h1 className="h-display text-3xl sm:text-4xl">{title}</h1></div>
+      <div>
+        <p className="eyebrow">{eyebrow}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="h-display text-3xl sm:text-4xl">{title}</h1>
+          {help && <PageHelp section={help} />}
+        </div>
+      </div>
       {children}
     </div>
   );

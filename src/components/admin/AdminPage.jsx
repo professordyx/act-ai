@@ -13,6 +13,8 @@ import { ErrorState, Loading, PageTitle } from "@/components/shared/States";
 import TemplatesPanel from "@/components/admin/TemplatesPanel";
 import TranscriptionPanel from "@/components/admin/TranscriptionPanel";
 import AiUsagePanel from "@/components/admin/AiUsagePanel";
+import FieldHelp from "@/components/help/FieldHelp";
+import HelpTip from "@/components/help/HelpTip";
 import { useI18n } from "@/lib/i18n";
 
 const ROLES = ROLE_KEYS.filter((r) => r !== "admin");
@@ -24,9 +26,13 @@ function ProfileRow({ p, save }) {
     <div className="card-soft space-y-2 p-4">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0"><div className="truncate font-semibold">{p.fullName}</div><div className="truncate text-xs text-muted-foreground">{p.email}</div></div>
-        <label className="flex items-center gap-2 text-xs">{t("adm.active")}<Switch checked={p.isActive !== false} onCheckedChange={(v) => save.mutate({ email: p.email, fullName: p.fullName, roles: p.roles || [], isActive: v })} /></label>
+        <div className="flex items-center gap-1">
+          <label className="flex items-center gap-2 text-xs">{t("adm.active")}<Switch checked={p.isActive !== false} onCheckedChange={(v) => save.mutate({ email: p.email, fullName: p.fullName, roles: p.roles || [], isActive: v })} /></label>
+          <HelpTip helpKey="admin.active" />
+        </div>
       </div>
-      <div className="flex flex-wrap gap-x-4 gap-y-1">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+        <HelpTip helpKey="admin.roles" />
         {ROLES.map((r) => <label key={r} className="flex items-center gap-1.5 text-xs"><Checkbox checked={p.roles?.includes(r)} onCheckedChange={() => toggle(r)} />{t(`role.${r}`)}</label>)}
       </div>
     </div>
@@ -46,10 +52,12 @@ export default function AdminPage() {
   if (!isAdmin) return <ErrorState error={{ message: t("adm.restricted") }} />;
   return (
     <div className="space-y-6">
-      <PageTitle eyebrow={t("adm.eyebrow")} title={t("adm.title")} />
+      <PageTitle eyebrow={t("adm.eyebrow")} title={t("adm.title")} help="admin" />
       <p className="max-w-2xl text-sm text-muted-foreground">{t("adm.description")}</p>
       <form className="flex max-w-xl gap-2" onSubmit={(e) => { e.preventDefault(); save.mutate({ email, roles: ["participant"], isActive: true }, { onSuccess: () => setEmail("") }); }}>
-        <Input type="email" placeholder={t("adm.emailPlaceholder")} value={email} onChange={(e) => setEmail(e.target.value)} />
+        <FieldHelp helpKey="admin.email" label={t("common.email")} className="flex-1">
+          <Input type="email" placeholder={t("adm.emailPlaceholder")} value={email} onChange={(e) => setEmail(e.target.value)} />
+        </FieldHelp>
         <Button type="submit" disabled={!email}>{t("common.add")}</Button>
       </form>
       {list.isLoading ? <Loading /> : list.error ? <ErrorState error={list.error} /> : <div className="grid gap-3 lg:grid-cols-2">{list.data.map((p) => <ProfileRow key={p.id} p={p} save={save} />)}</div>}

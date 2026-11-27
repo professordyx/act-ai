@@ -18,6 +18,7 @@ export const NAV = [
   { to: "/actions", key: "nav.actions" },
   { to: "/repository", key: "nav.repository" },
   { to: "/billing", key: "nav.billing" },
+  { to: "/manual", key: "nav.manual" },
   { to: "/admin", key: "nav.admin" },
 ];
 

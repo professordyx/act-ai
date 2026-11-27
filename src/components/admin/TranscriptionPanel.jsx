@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getTranscriptionSettings, removeTranscriptionSettings, saveTranscriptionSettings } from "@/lib/transcription-fns";
+import FieldHelp from "@/components/help/FieldHelp";
 import { useAct } from "@/hooks/use-act";
 import { useI18n } from "@/lib/i18n";
 
@@ -49,24 +50,21 @@ export default function TranscriptionPanel() {
         <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
       ) : (
         <div className="grid gap-3 lg:grid-cols-3">
-          <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("tx.provider")}</label>
+          <FieldHelp helpKey="tx.provider" label={t("tx.provider")}>
             <Select value={provider} onValueChange={pickProvider}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>{providers.map((p) => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}</SelectContent>
             </Select>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("tx.model")}</label>
+          </FieldHelp>
+          <FieldHelp helpKey="tx.model" label={t("tx.model")}>
             <Select value={model} onValueChange={setModel}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>{models.map((m) => <SelectItem key={m.id} value={m.id}>{m.label}</SelectItem>)}</SelectContent>
             </Select>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("tx.key")}</label>
+          </FieldHelp>
+          <FieldHelp helpKey="tx.key" label={t("tx.key")}>
             <Input type="password" autoComplete="off" value={apiKey} placeholder={data?.configured ? "•••• ••••" : t("tx.keyPlaceholder")} onChange={(e) => setApiKey(e.target.value)} />
-          </div>
+          </FieldHelp>
         </div>
       )}
 

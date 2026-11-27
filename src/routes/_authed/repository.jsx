@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_authed/repository")({
     const { t } = useI18n();
     return (
       <div>
-        <PageTitle eyebrow={t("repo.eyebrow")} title={t("repo.title")} />
+        <PageTitle eyebrow={t("repo.eyebrow")} title={t("repo.title")} help="repositorio" />
         <p className="mb-4 max-w-2xl text-sm text-muted-foreground">{t("repo.description")}</p>
         <MeetingList fixedStatuses={["aprovada", "arquivada"]} />
       </div>

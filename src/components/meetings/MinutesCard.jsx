@@ -8,6 +8,7 @@ import TemplatePicker from "@/components/meetings/TemplatePicker";
 import { useAct } from "@/hooks/use-act";
 import { useI18n } from "@/lib/i18n";
 import { downloadMinutesPdf } from "@/lib/minutes-pdf";
+import FieldHelp from "@/components/help/FieldHelp";
 
 function Highlighted({ text }) {
   return <div className="whitespace-pre-wrap text-sm leading-relaxed">{text.split(/(A VALIDAR)/g).map((p, i) => (p === "A VALIDAR" ? <mark key={i} className="rounded bg-amber-200 px-1 font-semibold text-amber-900">{p}</mark> : p))}</div>;
@@ -67,9 +68,13 @@ export default function MinutesCard({ data }) {
       {!mi && !manual && <p className="text-sm text-muted-foreground">{t("min.empty")}</p>}
       {editable ? (
         <div className="space-y-2">
-          <Textarea rows={16} value={text} onChange={(e) => setText(e.target.value)} className="font-body" />
+          <FieldHelp helpKey="minutes.editor">
+            <Textarea rows={16} value={text} onChange={(e) => setText(e.target.value)} className="font-body" />
+          </FieldHelp>
           {mi && <Highlighted text={text} />}
-          <Input placeholder={t("min.changeSummary")} value={summary} onChange={(e) => setSummary(e.target.value)} />
+          <FieldHelp helpKey="minutes.changeSummary">
+            <Input placeholder={t("min.changeSummary")} value={summary} onChange={(e) => setSummary(e.target.value)} />
+          </FieldHelp>
           <div className="flex flex-wrap gap-2">
             <Button size="sm" disabled={!text.trim() || (mi && !dirty) || save.isPending} onClick={() => save.mutate({ meetingId: m.id, minutesId: mi?.id, content: text, changeSummary: summary || undefined }, { onSuccess: () => { setSummary(""); setManual(false); } })}>{t("min.saveDraft")}</Button>
             {perms.canSubmit && <Button size="sm" variant="secondary" disabled={dirty || submit.isPending} onClick={() => submit.mutate({ meetingId: m.id, minutesId: mi.id })}>{t("min.submit")}</Button>}

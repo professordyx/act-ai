@@ -5,6 +5,7 @@ import { approveMinutes, archiveMeeting, rejectMinutes } from "@/lib/minutes-fns
 import { useAct } from "@/hooks/use-act";
 import { fmt } from "@/lib/labels";
 import { useI18n } from "@/lib/i18n";
+import FieldHelp from "@/components/help/FieldHelp";
 
 export default function ApprovalPanel({ data }) {
   const { t, locale } = useI18n();
@@ -24,7 +25,9 @@ export default function ApprovalPanel({ data }) {
       </dl>
       {waiting && perms.canApprove && (
         <div className="mt-4 space-y-2">
-          <Textarea rows={3} placeholder={t("ap.comment")} value={comment} onChange={(e) => setComment(e.target.value)} />
+          <FieldHelp helpKey="minutes.comment" label={t("ap.comment")}>
+            <Textarea rows={3} placeholder={t("ap.comment")} value={comment} onChange={(e) => setComment(e.target.value)} />
+          </FieldHelp>
           <div className="flex gap-2">
             <Button size="sm" disabled={approve.isPending} onClick={() => approve.mutate(args)}>{t("ap.approve")}</Button>
             <Button size="sm" variant="outline" disabled={!comment.trim() || reject.isPending} onClick={() => reject.mutate(args)}>{t("ap.reject")}</Button>

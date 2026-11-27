@@ -13,6 +13,7 @@ import ParticipantsCard from "@/components/meetings/ParticipantsCard";
 import ActionsCard from "@/components/meetings/ActionsCard";
 import VersionsList from "@/components/meetings/VersionsList";
 import AuditTimeline from "@/components/meetings/AuditTimeline";
+import PageHelp from "@/components/help/PageHelp";
 import { useI18n } from "@/lib/i18n";
 
 export default function MeetingDetail({ id }) {
@@ -23,7 +24,10 @@ export default function MeetingDetail({ id }) {
   const m = data.meeting;
   return (
     <div className="space-y-6">
-      <Link to="/meetings" className="inline-flex items-center gap-1 text-sm font-semibold text-primary"><ArrowLeft className="h-4 w-4" />{t("detail.back")}</Link>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Link to="/meetings" className="inline-flex items-center gap-1 text-sm font-semibold text-primary"><ArrowLeft className="h-4 w-4" />{t("detail.back")}</Link>
+        <PageHelp section="detalhe" />
+      </div>
       <div className="card-featured p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
