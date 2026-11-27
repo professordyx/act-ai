@@ -52,7 +52,7 @@ export default function RecordingCard({ data }) {
       {perms.canEdit && !locked && (
         <div className="mb-4 space-y-2 rounded-xl border bg-muted/40 p-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("rec.recordSection")}</p>
-          <MeetingRecorder meetingId={m.id} />
+          <MeetingRecorder meetingId={m.id} maxSeconds={data.limits?.maxRecordingSeconds || 0} />
           <p className="text-xs text-muted-foreground">{t("rec.hint")}</p>
         </div>
       )}

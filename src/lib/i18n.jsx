@@ -13,6 +13,7 @@ const pt = {
   "nav.approvals": "Aprovações",
   "nav.actions": "Ações",
   "nav.repository": "Repositório",
+  "nav.billing": "Assinatura",
   "nav.admin": "Administração",
   "common.newMeeting": "Nova reunião",
   "common.loading": "Carregando...",
@@ -309,6 +310,8 @@ const pt = {
   "toast.demoCreated": "Reunião de demonstração criada",
 
   srv: {
+    "Limite do plano gratuito: 1 reunião por dia. Assine o plano pago para ter reuniões ilimitadas.": "Limite do plano gratuito: 1 reunião por dia. Assine o plano pago para ter reuniões ilimitadas.",
+    "Limite do plano gratuito: gravações de até 20 minutos. Assine o plano pago para gravações ilimitadas.": "Limite do plano gratuito: gravações de até 20 minutos. Assine o plano pago para gravações ilimitadas.",
     "Apenas organizadores podem criar reuniões": "Apenas organizadores podem criar reuniões",
     "Confirme o consentimento/ciência de gravação dos participantes": "Confirme o consentimento/ciência de gravação dos participantes",
     "Sem permissão para esta reunião": "Sem permissão para esta reunião",
@@ -355,6 +358,7 @@ const en = {
   "nav.approvals": "Approvals",
   "nav.actions": "Actions",
   "nav.repository": "Repository",
+  "nav.billing": "Billing",
   "nav.admin": "Administration",
   "common.newMeeting": "New meeting",
   "common.loading": "Loading...",
@@ -651,6 +655,8 @@ const en = {
   "toast.demoCreated": "Sample meeting created",
 
   srv: {
+    "Limite do plano gratuito: 1 reunião por dia. Assine o plano pago para ter reuniões ilimitadas.": "Free plan limit: 1 meeting per day. Subscribe to the paid plan for unlimited meetings.",
+    "Limite do plano gratuito: gravações de até 20 minutos. Assine o plano pago para gravações ilimitadas.": "Free plan limit: recordings up to 20 minutes. Subscribe to the paid plan for unlimited recordings.",
     "Apenas organizadores podem criar reuniões": "Only organizers can create meetings",
     "Confirme o consentimento/ciência de gravação dos participantes": "Confirm that participants were informed and consented to the recording",
     "Sem permissão para esta reunião": "You do not have access to this meeting",
@@ -697,6 +703,7 @@ const es = {
   "nav.approvals": "Aprobaciones",
   "nav.actions": "Acciones",
   "nav.repository": "Repositorio",
+  "nav.billing": "Suscripción",
   "nav.admin": "Administración",
   "common.newMeeting": "Nueva reunión",
   "common.loading": "Cargando...",
@@ -993,6 +1000,8 @@ const es = {
   "toast.demoCreated": "Reunión de demostración creada",
 
   srv: {
+    "Limite do plano gratuito: 1 reunião por dia. Assine o plano pago para ter reuniões ilimitadas.": "Límite del plan gratuito: 1 reunión al día. Suscríbase al plan de pago para tener reuniones ilimitadas.",
+    "Limite do plano gratuito: gravações de até 20 minutos. Assine o plano pago para gravações ilimitadas.": "Límite del plan gratuito: grabaciones de hasta 20 minutos. Suscríbase al plan de pago para grabaciones ilimitadas.",
     "Apenas organizadores podem criar reuniões": "Solo los organizadores pueden crear reuniones",
     "Confirme o consentimento/ciência de gravação dos participantes": "Confirme que los participantes fueron informados y consintieron la grabación",
     "Sem permissão para esta reunião": "No tiene acceso a esta reunión",

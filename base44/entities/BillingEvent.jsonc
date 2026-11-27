@@ -1,0 +1,68 @@
+{
+  "name": "BillingEvent",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "checkout_iniciado",
+        "assinatura_ativa",
+        "pagamento_falhou",
+        "assinatura_cancelada",
+        "assentos_alterados",
+        "plano_expirado"
+      ],
+      "enumColors": [
+        "blue",
+        "green",
+        "red",
+        "pink",
+        "yellow",
+        "gray"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "amountUsd": {
+      "type": "number",
+      "description": "Valor mensal da assinatura no momento do evento"
+    },
+    "seats": {
+      "type": "number"
+    },
+    "providerRef": {
+      "type": "string",
+      "description": "Identificador do checkout ou da assinatura no provedor de pagamentos"
+    },
+    "performedByEmail": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "description"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

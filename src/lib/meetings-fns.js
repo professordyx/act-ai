@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth-middleware";
 import { LANG_LOCALES, MEETING_LANGUAGES, MOCK_TRANSCRIPT, audit, db, fail, getMeetingFor, hasRole, loadMe, meetingLanguage } from "@/lib/meeting-core";
 import { detectTextLanguage, loadTranscriptionConfig, transcribeWithProvider, translateTranscript } from "@/lib/transcription.server";
+import { PLAN, assertCanStartMeeting, assertRecordingAllowed, billingState } from "@/lib/billing-core";
 
 const str = (n) => z.string().max(n);
 
@@ -38,6 +39,7 @@ export const createMeeting = createServerFn({ method: "POST" }).middleware([requ
     const sdb = db(context);
     const me = await loadMe(sdb, context.user);
     if (!hasRole(me, "organizer")) fail("Apenas organizadores podem criar reuniões", 403);
+    await assertCanStartMeeting(sdb, me);
     if (data.consentRequired && !data.consentCaptured) fail("Confirme o consentimento/ciência de gravação dos participantes");
     const m = await sdb.entities.Meeting.create({
       title: data.title,
@@ -172,7 +174,9 @@ export const getMeetingDetails = createServerFn({ method: "POST" }).middleware([
     const f = (E, q, sort) => sdb.entities[E].filter(q, { sort, limit: 200 }).then((r) => r.items);
     const [participants, approvals, actions] = await Promise.all([f("MeetingParticipant", { meetingId: m.id }), f("Approval", { meetingId: m.id }, "-created_date"), f("ActionItem", { meetingId: m.id }, "created_date")]);
     const minutes = m.latestMinutesId ? await sdb.entities.Minutes.get(m.latestMinutesId).catch(() => null) : null;
-    const base = { meeting: m, participants, minutes, approvals, actions };
+    const billing = await billingState(sdb, me);
+    const limits = { maxRecordingSeconds: billing.isPaid ? 0 : PLAN.freeMaxMinutes * 60 };
+    const base = { meeting: m, participants, minutes, approvals, actions, limits };
     const perms = {
       canEdit: rel.canEdit,
       canSubmit: (rel.organizer || me.isAdmin) && !!minutes && ["rascunho", "rejeitada"].includes(minutes.status),
@@ -195,6 +199,7 @@ export const addRecording = createServerFn({ method: "POST" }).middleware([requi
     const { m, rel } = await getMeetingFor(sdb, me, data.meetingId);
     if (!rel.canEdit) fail("Sem permissão para enviar gravação", 403);
     if (["em_revisao", "aguardando_aprovacao", "aprovada", "arquivada"].includes(m.status)) fail("A reunião não aceita novas gravações neste status");
+    await assertRecordingAllowed(sdb, me, data.durationSeconds);
     const r = await sdb.entities.Recording.create({ meetingId: m.id, fileName: data.fileName, fileUrl: data.fileUri, fileSizeBytes: data.fileSizeBytes, mimeType: data.mimeType, durationSeconds: data.durationSeconds, uploadedByUserId: me.email, uploadedAt: new Date().toISOString(), processingStatus: "enviado" });
     await sdb.entities.Meeting.update(m.id, { latestRecordingId: r.id, status: m.status === "aguardando_upload" ? "gravacao_enviada" : m.status });
     await audit(sdb, me, { entityType: "recording", entityId: r.id, meetingId: m.id, eventType: "gravacao_enviada", description: `Gravação "${data.fileName}" enviada (armazenamento privado)` });

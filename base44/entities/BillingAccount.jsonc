@@ -1,0 +1,97 @@
+{
+  "name": "BillingAccount",
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "gratuito",
+        "ativa",
+        "pagamento_pendente",
+        "inadimplente",
+        "cancelada"
+      ],
+      "enumColors": [
+        "gray",
+        "green",
+        "yellow",
+        "red",
+        "pink"
+      ],
+      "default": "gratuito",
+      "description": "Estado da conta de cobran\u00e7a \u00fanica da empresa"
+    },
+    "seats": {
+      "type": "number",
+      "default": 0,
+      "description": "Assentos pagos contratados (US$ 5 cada)"
+    },
+    "pendingSeats": {
+      "type": "number",
+      "default": 0,
+      "description": "Assentos escolhidos no checkout aguardando confirma\u00e7\u00e3o"
+    },
+    "pricePerSeatUsd": {
+      "type": "number",
+      "default": 5
+    },
+    "currency": {
+      "type": "string",
+      "default": "usd"
+    },
+    "provider": {
+      "type": "string",
+      "default": "stripe"
+    },
+    "providerSubscriptionId": {
+      "type": "string"
+    },
+    "lastCheckoutId": {
+      "type": "string"
+    },
+    "currentPeriodEnd": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "cancelAtPeriodEnd": {
+      "type": "boolean",
+      "default": false
+    },
+    "graceUntil": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "lastPaymentAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedByEmail": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

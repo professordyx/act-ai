@@ -28,6 +28,15 @@
     "isActive": {
       "type": "boolean",
       "default": true
+    },
+    "hasPaidSeat": {
+      "type": "boolean",
+      "default": false,
+      "description": "Usu\u00e1rio ocupa um dos assentos pagos da empresa (definido pelo administrador)"
+    },
+    "seatAssignedAt": {
+      "type": "string",
+      "format": "date-time"
     }
   },
   "required": [

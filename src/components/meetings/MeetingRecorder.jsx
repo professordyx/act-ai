@@ -6,6 +6,7 @@ import { base44 } from "@/api/base44Client";
 import { addRecording } from "@/lib/meetings-fns";
 import { useAct } from "@/hooks/use-act";
 import { useI18n } from "@/lib/i18n";
+import { useBillingCopy } from "@/lib/billing-i18n";
 
 const MIME_CANDIDATES = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"];
 
@@ -20,8 +21,10 @@ function clock(total) {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-export default function MeetingRecorder({ meetingId, onSaved }) {
+export default function MeetingRecorder({ meetingId, onSaved, maxSeconds = 0 }) {
   const { t } = useI18n();
+  const c = useBillingCopy();
+  const limit = maxSeconds || 0;
   const add = useAct(addRecording, t("toast.recordingUploaded"));
   const [phase, setPhase] = useState("idle");
   const [seconds, setSeconds] = useState(0);
@@ -42,6 +45,15 @@ export default function MeetingRecorder({ meetingId, onSaved }) {
     const id = setInterval(() => setSeconds((s) => s + 1), 1000);
     return () => clearInterval(id);
   }, [phase]);
+
+  // Plano gratuito: encerra a gravação automaticamente ao atingir o limite de duração.
+  useEffect(() => {
+    if (phase !== "recording" || !limit || seconds < limit) return;
+    toast.info(c.freeL2);
+    if (recorder.current?.state === "recording") recorder.current.stop();
+    release();
+    setPhase("saving");
+  }, [seconds, phase, limit]);
 
   const persist = async (mimeType) => {
     const type = (mimeType || "audio/webm").split(";")[0];
@@ -126,7 +138,7 @@ export default function MeetingRecorder({ meetingId, onSaved }) {
           <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-destructive" />
           {t("rec.recording")}
         </span>
-        <span className="font-mono text-lg font-semibold tabular-nums">{clock(seconds)}</span>
+        <span className="font-mono text-lg font-semibold tabular-nums">{clock(seconds)}{limit ? ` / ${clock(limit)}` : ""}</span>
         <Button variant="destructive" size="sm" className="ml-auto rounded-full" onClick={stop}>
           <Square className="mr-1 h-4 w-4" />{t("rec.stop")}
         </Button>
@@ -135,8 +147,11 @@ export default function MeetingRecorder({ meetingId, onSaved }) {
   }
 
   return (
-    <Button className="rounded-full font-bold" onClick={start}>
-      <Mic className="mr-2 h-4 w-4" />{t("rec.start")}
-    </Button>
+    <div className="space-y-1">
+      <Button className="rounded-full font-bold" onClick={start}>
+        <Mic className="mr-2 h-4 w-4" />{t("rec.start")}
+      </Button>
+      {limit > 0 && <p className="text-xs text-muted-foreground">{c.freeL2}</p>}
+    </div>
   );
 }
