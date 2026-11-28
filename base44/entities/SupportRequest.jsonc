@@ -1,0 +1,108 @@
+{
+  "name": "SupportRequest",
+  "type": "object",
+  "properties": {
+    "protocol": {
+      "type": "string",
+      "description": "C\u00f3digo curto mostrado ao usu\u00e1rio (AT-XXXXXX)"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string",
+      "description": "O que o usu\u00e1rio precisa"
+    },
+    "conversationSummary": {
+      "type": "string",
+      "description": "Contexto da conversa com o agente no momento do encaminhamento"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "duvida",
+        "problema_tecnico",
+        "cobranca",
+        "acesso",
+        "sugestao",
+        "outro"
+      ],
+      "enumColors": [
+        "blue",
+        "red",
+        "yellow",
+        "purple",
+        "green",
+        "gray"
+      ],
+      "default": "duvida"
+    },
+    "urgency": {
+      "type": "string",
+      "enum": [
+        "baixa",
+        "normal",
+        "alta"
+      ],
+      "enumColors": [
+        "gray",
+        "blue",
+        "red"
+      ],
+      "default": "normal"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "aberta",
+        "em_andamento",
+        "resolvida"
+      ],
+      "enumColors": [
+        "yellow",
+        "blue",
+        "green"
+      ],
+      "default": "aberta"
+    },
+    "requesterUserId": {
+      "type": "string"
+    },
+    "requesterEmail": {
+      "type": "string"
+    },
+    "requesterName": {
+      "type": "string"
+    },
+    "agentConversationId": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "subject",
+    "summary",
+    "requesterEmail"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

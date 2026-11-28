@@ -8,6 +8,7 @@ import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
 import GlobalSearch from "@/components/layout/GlobalSearch";
 
 import ActAILogo from "@/components/brand/ActAILogo";
+import SupportWidget from "@/components/support/SupportWidget";
 
 const LOGO = "https://media.base44.com/images/public/workspaces/67dcbb69c0affc59bd5d5020/brands/402f67444_website_logo_addc7423.png";
 
@@ -75,6 +76,7 @@ export default function AppShell() {
           </div>
         </div>
       </footer>
+      <SupportWidget />
     </div>
   );
 }
