@@ -6,8 +6,27 @@
       "tool_name": "escalate_to_human",
       "route_path": "/api/support/escalate",
       "method": "post",
-      "description": "Registra uma solicita\u00e7\u00e3o de atendimento humano para o usu\u00e1rio atual, com o contexto da conversa. Chame quando o usu\u00e1rio pedir atendimento humano, quando o caso exigir a\u00e7\u00e3o da equipe (cobran\u00e7a, acesso, dados perdidos, erro do sistema) ou quando duas tentativas de solu\u00e7\u00e3o n\u00e3o resolverem. Body: { subject: string (at\u00e9 120 caracteres), summary: string (o que o usu\u00e1rio precisa, at\u00e9 2000), conversationSummary: string (resumo do hist\u00f3rico e do que j\u00e1 foi tentado, at\u00e9 6000), category: 'duvida'|'problema_tecnico'|'cobranca'|'acesso'|'sugestao'|'outro', urgency: 'baixa'|'normal'|'alta' }. Retorna { protocol, email, createdAt }. Informe o protocolo ao usu\u00e1rio."
+      "description": "Registra una solicitud de atenci\u00f3n humana con el contexto de la conversaci\u00f3n y devuelve el protocolo."
     }
   ],
+  "context_files": [],
+  "app_user_connector_configs": [],
+  "selected_skill_names": [],
+  "selected_workspace_skill_ids": [],
+  "model": "automatic",
+  "whatsapp_greeting": null,
+  "telegram_greeting": null,
+  "line_greeting": null,
+  "memory_config": {
+    "enabled": true,
+    "scope": "both",
+    "include_other_conversation_context": false,
+    "instructions": null
+  },
+  "voice_config": {
+    "voice_id": null
+  },
+  "emails_settings": null,
+  "allow_anonymous_access": false,
   "name": "support_agent"
 }
